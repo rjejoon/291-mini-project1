@@ -7,7 +7,7 @@ def main():
     '''
     The main loop of the program.
     '''
-    conn, curr = initConnAndCurrFrom('schema.sql', 'socialmedia.db')
+    conn, curr = initConnAndCurrFrom('schema.sql')
 
     run = True
     while run:
@@ -28,19 +28,17 @@ def main():
     conn.close()
 
 
-def initConnAndCurrFrom(f_name, db_name):
+def initConnAndCurrFrom(f_name):
     '''
-    Reads in DDL from a text file and returns sqlite3 connection and cursor associated to the specified database.
+    Reads in DDL from a text file and makes database in memory and returns connection and cursor.
 
     Keyword arguments:
     f_name —- text file containing SQL DDL
-    db_name -- .db file
     '''
     dir_path = os.path.abspath(os.path.dirname(__file__)) + os.sep
     f_path = dir_path + f_name
-    db_path = dir_path + db_name 
 
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(':memory:')
     curr = conn.cursor()
     with open(f_path, 'r') as f:
         
