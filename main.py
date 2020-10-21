@@ -107,7 +107,7 @@ def signUp(conn, curr):
     print("Sign up successful!")
 
     curr.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", 
-            [uid, name, city, pwd, crdate])
+            [uid, name, pwd, city, crdate])
 
     conn.commit()
 
