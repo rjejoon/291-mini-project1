@@ -18,7 +18,7 @@ def main():
         if uInput == 'q':
             run = False
         elif uInput == 'si':
-            signIn()
+            userID, password = signIn(conn, curr)
         elif uInput == 'su':
             signUp(conn, curr)
         else:
@@ -49,6 +49,32 @@ def initConnAndCurrFrom(f_name):
     conn.commit()
 
     return conn, curr
+
+
+def signIn(conn, curr):
+    '''
+    Prompts the user to enter their user ID and password. Checks if they exist in the database and Returns them.
+
+    Inputs: conn, curr
+    Returns: userID, password
+    '''
+
+    validInfo = False
+    while not validInfo:
+
+        userID = input('\nEnter your user ID: ')
+        password = input('Enter your password: ')
+
+        curr.execute('SELECT * FROM users WHERE uid = :userID AND pwd = :password;',
+                    {'userID': userID, 'password': password})
+
+        if curr.fetchone():
+            validInfo = True
+        else:
+            print('error: invalid user ID or password. Please try again.')
+
+    print('You have successfully signed in.\n')
+    return userID, password
 
 
 def signUp(conn, curr):
