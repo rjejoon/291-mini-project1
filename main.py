@@ -20,6 +20,10 @@ def main():
             print("error: command not found.")
 
 
+def signUp():
+
+
+
 
 if __name__ == "__main__":
 
