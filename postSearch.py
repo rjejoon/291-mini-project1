@@ -31,8 +31,8 @@ def searchPosts(conn, curr, uid):
     matchTitleBodyTable = '''
                             SELECT 
                                 pid,
-                                (length(title)-length(replace(title, :kw, ''))) / length(:kw)
-                                  + (length(body)-length(replace(body, :kw, ''))) / length(:kw) 
+                                (length(lower(title))-length(replace(lower(title), :kw, ''))) / length(:kw)
+                                  + (length(lower(body))-length(replace(lower(body), :kw, ''))) / length(:kw) 
                                     as numTitleBodyMatches
                             FROM posts p
                             WHERE 
@@ -58,11 +58,15 @@ def searchPosts(conn, curr, uid):
                             ({}) left outer join ({}) using (pid)
                      '''.format(matchTitleBodyTable, matchTagTable)
 
+    numVotesTable = '' 
+
     for kw in keywords:
+        kw = kw.lower()
         curr.execute(numMatchQuery,{'kw':kw})
         for row in curr.fetchall():
             print(row)
 
+        
 
 
 
