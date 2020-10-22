@@ -63,7 +63,7 @@ def signIn(conn, curr):
     while not validInfo:
 
         userID = input('\nEnter your user ID: ')
-        password = input('Enter your password: ')
+        password = getpass.getpass('Enter your password: ')
 
         curr.execute('SELECT * FROM users WHERE uid = :userID AND pwd = :password;',
                     {'userID': userID, 'password': password})
@@ -73,7 +73,7 @@ def signIn(conn, curr):
         else:
             print('error: invalid user ID or password. Please try again.')
 
-    print('You have successfully signed in.\n')
+    print('You have successfully signed in.')
     return userID, password
 
 
