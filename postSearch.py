@@ -6,7 +6,7 @@ curr = conn.cursor()
 def searchPosts(conn, curr, uid):
 
     prompt = "Enter keywords to search, each separated by a comma: "
-    keywords = input(prompt).lower().split(',')
+    keywords = input(prompt).lower().replace("'", "''").split(',')
     keywords = list(map(lambda kw : kw.strip(), keywords))
 
     curr.executescript(
@@ -28,7 +28,7 @@ def searchPosts(conn, curr, uid):
 
     conn.commit()
     
-    matchTitleBodyTable = '''
+    matchingTitleBodyTable = '''
                             SELECT 
                                 pid,
                                 (length(lower(title))-length(replace(lower(title), :kw, ''))) / length(:kw)
@@ -39,7 +39,7 @@ def searchPosts(conn, curr, uid):
                                 p.title LIKE '%'||:kw||'%'
                                 OR p.body LIKE '%'||:kw||'%'
                             ''' 
-    matchTagTable = '''
+    matchingTagTable = '''
                         SELECT
                             pid,
                             count(tag) as numTagMatches 
@@ -47,22 +47,64 @@ def searchPosts(conn, curr, uid):
                             tags t
                         where
                             tag like '%'||:kw||'%'
+                        group by pid
                     '''
 
-    numMatchQuery = '''
+    numVotesTable = '''
+                        SELECT
+                            pid,
+                            count(vno) as numVotes
+                        FROM 
+                            votes v
+                        GROUP BY pid
+                    '''
+
+    numAnsTable = '''
+                    SELECT
+                        qid,
+                        count(pid) as numAns
+                    FROM
+                        answers 
+                    group by qid
+                '''
+
+    matchingPosts = '''
+                    SELECT pid, numTitleBodyMatches, numTagMatches
+
+                    FROM
+                        ({0}) 
+                            left outer join 
+                        ({1}) 
+                            using (pid) 
+
+                    union
+
+                    SELECT pid, numTitleBodyMatches, numTagMatches
+
+                    FROM
+                        ({1})
+                            left outer join
+                        ({0})
+                            using (pid)
+                    '''.format(matchingTitleBodyTable, matchingTagTable)
+
+    matchingPostsQuery = '''
                         SELECT 
                             pid, 
                             numTitleBodyMatches + ifnull(numTagMatches, 0)
-                                as numMatches
+                                as numMatches,
+                            ifnull(numVotes, 0),
+                            numAns
                         FROM
-                            ({}) left outer join ({}) using (pid)
-                     '''.format(matchTitleBodyTable, matchTagTable)
-
-    numVotesTable = '' 
+                            ({}) left outer join ({}) using (pid) 
+                                left outer join ({}) on pid = qid
+                     '''.format(matchingPosts, 
+                                numVotesTable, 
+                                numAnsTable)
 
     for kw in keywords:
-        kw = kw.lower()
-        curr.execute(numMatchQuery,{'kw':kw})
+        print(kw)
+        curr.execute(matchingPostsQuery, {'kw':kw})
         for row in curr.fetchall():
             print(row)
 
