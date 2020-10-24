@@ -18,7 +18,7 @@ def main():
         if uInput == 'q':
             run = False
         elif uInput == 'si':
-            userID, password = signIn(conn, curr)
+            userID = signIn(conn, curr)
         elif uInput == 'su':
             signUp(conn, curr)
         else:
@@ -74,7 +74,7 @@ def signIn(conn, curr):
             print('error: invalid user ID or password. Please try again.')
 
     print('You have successfully signed in.')
-    return userID, password
+    return userID
 
 
 def signUp(conn, curr):
@@ -155,6 +155,93 @@ def checkValid():
     while True:
         checkValid = input("\nIs this correct? y/n ").lower()
         if checkValid == 'y':
+            return True
+        elif checkValid == 'n':
+            return False
+
+
+def postQ(conn, curr, poster):
+    '''
+    Prompts the user to make a post
+
+    Inputs: 
+        conn -- sqlite3.Connection
+        curr -- sqllite3.Connection
+        poster (str)
+    '''
+    print('\n< Post Question >')
+    infoList = getPInfo(curr)
+    if infoList:
+        infoList.append(poster)
+
+        curr.execute('INSERT INTO posts VALUES (?, ?, ?, ?, ?)', infoList)
+
+        curr.execute('INSERT INTO questions VALUES (?, NULL)', [infoList[0]])
+
+        conn.commit()
+
+
+def getPInfo(curr):
+    '''
+    Gets an info for making a post and Returns a list of pid, pdate, title, body
+
+    Input: curr -- sqllite3.Connection
+    '''
+    valid = False
+    while not valid:
+        pid = getPid(curr)
+        pdate = str(date.today())
+        title = input("Enter your title: ")
+        body = input("Enter your body: ")
+
+        print('\nPlease double check your information: ')
+        print('   pid: {}'.format(pid))
+        print('   title: {}'.format(title))
+        print('   body: {}'.format(body))
+
+        if checkValid():
+            valid = True
+            return [pid, pdate, title, body]
+        else:
+            if not continuePost():
+                return False 
+
+
+def getPid(curr):
+    '''
+    Generates a new pid and Returns it.
+
+    Input: curr -- sqllite3.Connection
+    '''
+    curr.execute('SELECT * FROM posts;')
+    if not curr.fetchone():
+        pid = 'p001'
+    else:
+        pidNum = getLastPid(curr) + 1
+        pid = 'p{:03}'.format(pidNum)
+    return pid
+
+
+def getLastPid(curr):
+    '''
+    Gets the last pid (int) inserted in the database.
+
+    Input: curr -- sqllite3.Connection
+    '''
+    # only gets the numerical part of pid
+    curr.execute('SELECT substr(pid, 2, 4) FROM posts')
+    lastNum = int(curr.fetchall()[-1][0])
+    return lastNum
+
+
+def continuePost():
+    '''
+    Confirms the users if they still want to make a post.
+    '''
+    while True:
+        checkValid = input('Do you still want to make a post? y/n ').lower()
+        if checkValid == 'y':
+            print()
             return True
         elif checkValid == 'n':
             return False
