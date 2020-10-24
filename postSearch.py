@@ -1,13 +1,12 @@
 import sqlite3
 
-conn = sqlite3.connect('./test.db')
-curr = conn.cursor()
 
 def searchPosts(conn, curr, uid):
 
     prompt = "Enter keywords to search, each separated by a comma: "
     keywords = input(prompt).lower().replace("'", "''").split(',')
     keywords = list(map(lambda kw : kw.strip(), keywords))
+    print(keywords)
 
     curr.executescript(
             '''drop table if exists searchResult;
@@ -28,17 +27,36 @@ def searchPosts(conn, curr, uid):
 
     conn.commit()
     
+
+    keywords = {'kw{}'.format(i) : kw for i, kw in enumerate(keywords)}
+    print(keywords)
+        
+    matchingQueries = []
+    for i, kw in enumerate(keywords.keys()):
+        matchingPostsQuery = getMatchingPosts(i)
+        matchingQueries.append(matchingPostsQuery)
+
+    q = '\nUnion all\n'.join(matchingQueries) 
+    with open('./testQuery.sql', 'w') as f:
+        f.write(q)
+
+    curr.execute(q, keywords)
+    for row in curr.fetchall():
+        print(row)
+                    
+def getMatchingPosts(i):
+
     matchingTitleBodyTable = '''
                             SELECT 
                                 pid,
-                                (length(lower(title))-length(replace(lower(title), :kw, ''))) / length(:kw)
-                                  + (length(lower(body))-length(replace(lower(body), :kw, ''))) / length(:kw) 
+                                (length(lower(title))-length(replace(lower(title), :kw{0}, ''))) / length(:kw{0})
+                                  + (length(lower(body))-length(replace(lower(body), :kw{0}, ''))) / length(:kw{0}) 
                                     as numTitleBodyMatches
                             FROM posts p
                             WHERE 
-                                p.title LIKE '%'||:kw||'%'
-                                OR p.body LIKE '%'||:kw||'%'
-                            ''' 
+                                p.title LIKE '%'||:kw{0}||'%'
+                                OR p.body LIKE '%'||:kw{0}||'%'
+                            '''.format(i) 
     matchingTagTable = '''
                         SELECT
                             pid,
@@ -46,9 +64,9 @@ def searchPosts(conn, curr, uid):
                         from 
                             tags t
                         where
-                            tag like '%'||:kw||'%'
+                            tag like '%'||:kw{0}||'%'
                         group by pid
-                    '''
+                    '''.format(i)
 
     numVotesTable = '''
                         SELECT
@@ -102,19 +120,12 @@ def searchPosts(conn, curr, uid):
                                 numVotesTable, 
                                 numAnsTable)
 
-    for kw in keywords:
-        print(kw)
-        curr.execute(matchingPostsQuery, {'kw':kw})
-        for row in curr.fetchall():
-            print(row)
+    # TODO add semicolon
 
+    # TODO currently working on only matches
+    return matchingPosts
         
-
-
-
          
-    #numAns = curr.execute("SELECT count(pid) FROM answers WHERE pid = :")
-
 
 def isMatch(title, body):
 
@@ -127,6 +138,8 @@ def isMatch(title, body):
 
 
 if __name__ == '__main__':
+    conn = sqlite3.connect('./test.db')
+    curr = conn.cursor()
     searchPosts(conn, curr, 'rjej')
 
 
