@@ -1,5 +1,6 @@
 import sqlite3
 import os 
+import sys
 import getpass
 from datetime import date
 
@@ -7,8 +8,11 @@ def main():
     '''
     The main loop of the program.
     '''
-    conn, curr = initConnAndCurrFrom('schema.sql')
+    db = getDBFromArgv(sys.argv)
 
+    conn, curr = initConnAndCurrFrom(db)
+
+    # TODO use try...except...finally
     run = True
     while run:
         
@@ -24,29 +28,23 @@ def main():
         else:
             print("error: command not found.")
 
+
     conn.commit()
     conn.close()
 
 
-def initConnAndCurrFrom(f_name):
+def initConnAndCurrFrom(db):
     '''
-    Reads in DDL from a text file and makes database in memory and returns connection and cursor.
+    Make a connection and cursur from a specified database.
 
     Keyword arguments:
-    f_name —- text file containing SQL DDL
+    db —- database file 
     '''
     dir_path = os.path.abspath(os.path.dirname(__file__)) + os.sep
-    f_path = dir_path + f_name
+    db_path = dir_path + f_name
 
-    conn = sqlite3.connect(':memory:')
+    conn = sqlite3.connect(db_path)
     curr = conn.cursor()
-    with open(f_path, 'r') as f:
-        
-        query = ''.join(f.readlines())
-       
-    curr.executescript(query)
-
-    conn.commit()
 
     return conn, curr
 
@@ -158,6 +156,14 @@ def checkValid():
             return True
         elif checkValid == 'n':
             return False
+
+def getDBFromArgv(argv):
+
+    if len(argv) != 2:
+        print("Usage: python3 main.py [file]") 
+        sys.exit(1)
+    
+    return argv[1]
 
 
 if __name__ == "__main__":
