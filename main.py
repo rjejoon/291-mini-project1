@@ -184,6 +184,7 @@ def postQ(conn, curr, poster):
 def postAns(conn, curr, poster, qid):
     '''
     Prompts the user to post an answer to the selected question
+    
     Inputs: 
         conn -- sqlite3.Connection
         curr -- sqllite3.Connection
