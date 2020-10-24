@@ -18,7 +18,7 @@ def main():
         if uInput == 'q':
             run = False
         elif uInput == 'si':
-            userID = signIn(conn, curr)
+            uid = signIn(conn, curr)
         elif uInput == 'su':
             signUp(conn, curr)
         else:
@@ -62,19 +62,19 @@ def signIn(conn, curr):
     validInfo = False
     while not validInfo:
 
-        userID = input('\nEnter your user ID: ')
-        password = getpass.getpass('Enter your password: ')
+        uid = input('\nEnter your user ID: ')
+        pwd = getpass.getpass('Enter your password: ')
 
         curr.execute('SELECT * FROM users WHERE uid = :userID AND pwd = :password;',
-                    {'userID': userID, 'password': password})
+                    {'userID': uid, 'password': pwd})
 
         if curr.fetchone():
             validInfo = True
         else:
             print('error: invalid user ID or password. Please try again.')
-
+        
     print('You have successfully signed in.')
-    return userID
+    return uid
 
 
 def signUp(conn, curr):
@@ -167,7 +167,7 @@ def postQ(conn, curr, poster):
     Inputs: 
         conn -- sqlite3.Connection
         curr -- sqllite3.Connection
-        poster (str)
+        poster -- uid of the current user (str)
     '''
     print('\n< Post Question >')
     infoList = getPInfo(curr)
@@ -188,8 +188,8 @@ def postAns(conn, curr, poster, qid):
     Inputs: 
         conn -- sqlite3.Connection
         curr -- sqllite3.Connection
-        poster (str)
-        qid (str)
+        poster -- uid of the current user (str)
+        qid -- selected post (str)
     '''
     print('\n< Post Answer >')
 
@@ -274,6 +274,47 @@ def continuePost():
             return True
         elif checkValid == 'n':
             return False
+
+
+def castVote(conn, curr, pid, uid):
+    '''
+    Prompts the user to cast a vote to the selected post
+
+    Inputs: 
+        conn -- sqlite3.Connection
+        curr -- sqllite3.Connection
+        pid -- selected post (str)
+        uid -- uid of the current user (str)
+    '''
+    print('\n< Cast Vote >')
+    valid = False
+    while not valid:
+        confirm = input('Confirmation: Do you want to vote for this post? y/n ').lower()
+
+        if confirm == 'y':
+            # checks if the user has already voted for the selected post
+            curr.execute('SELECT * FROM votes WHERE pid = ? and uid = ?',[pid, uid])
+            if curr.fetchone():
+                print("You've already voted for this post.")
+
+            else:
+                curr.execute('SELECT * FROM votes;')
+                vdate = str(date.today())
+
+                if not curr.fetchone():
+                    vno = 1
+                else:
+                    # gets the max vno in the database
+                    maxVno = curr.execute('SELECT MAX(vno) FROM votes WHERE pid = ?;',[pid]).fetchone()[0]
+                    vno = int(maxVno) + 1
+                
+                curr.execute('INSERT INTO votes VALUES (?, ?, ?, ?)', [pid, vno, vdate, uid])
+                conn.commit()
+            
+            valid = True
+
+        elif confirm == 'n':
+            valid = True
 
 
 if __name__ == "__main__":
