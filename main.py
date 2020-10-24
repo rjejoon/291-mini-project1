@@ -162,7 +162,7 @@ def checkValid():
 
 def postQ(conn, curr, poster):
     '''
-    Prompts the user to make a post
+    Prompts the user to post a question
 
     Inputs: 
         conn -- sqlite3.Connection
@@ -172,13 +172,41 @@ def postQ(conn, curr, poster):
     print('\n< Post Question >')
     infoList = getPInfo(curr)
     if infoList:
-        infoList.append(poster)
+        infoList.append(poster) # infoList = [pid, pdate, title, body, poster]
 
         curr.execute('INSERT INTO posts VALUES (?, ?, ?, ?, ?)', infoList)
 
         curr.execute('INSERT INTO questions VALUES (?, NULL)', [infoList[0]])
 
         conn.commit()
+
+
+def postAns(conn, curr, poster, qid):
+    '''
+    Prompts the user to post an answer to the selected question
+    Inputs: 
+        conn -- sqlite3.Connection
+        curr -- sqllite3.Connection
+        poster (str)
+        qid (str)
+    '''
+    print('\n< Post Answer >')
+
+    # checks if the selected post is a question
+    curr.execute('SELECT * from questions WHERE pid = ?;',[qid])
+    if curr.fetchone():
+        infoList = getPInfo(curr) 
+        if infoList:
+            infoList.append(poster) # infoList = [pid, pdate, title, body, poster]
+
+            curr.execute('INSERT INTO posts VALUES (?, ?, ?, ?, ?)', infoList)
+
+            curr.execute('INSERT INTO answers VALUES (?, ?)', [infoList[0], qid])
+
+            conn.commit()
+
+    else:
+        print('Sorry! You are not able to answer to this post.')
 
 
 def getPInfo(curr):
