@@ -1,4 +1,5 @@
 import sqlite3
+import sys
 
 
 def searchPosts(conn, curr, uid):
@@ -17,9 +18,13 @@ def searchPosts(conn, curr, uid):
         f.write(fullSearchQuery)
 
     curr.execute(fullSearchQuery, keywords)
-    for row in curr.fetchall():
-        print(row)
+    displaySearchResult(curr.fetchall())
 
+
+
+def displaySearchResult(results):
+
+    pass 
 
 def genSearchResult(keywords):
 
@@ -28,20 +33,36 @@ def genSearchResult(keywords):
     numVotesTableQuery = getnumVotesTable()
     numAnsTableQuery = getnumAnsTable()
 
-    fullSearchQuery = '''
+    searchQuery = '''
                         SELECT 
                             pid, 
                             numMatches,
-                            ifnull(numVotes, 0),
+                            ifnull(numVotes, 0) as numVotes,
                             numAns
                         FROM
-                            ({}) left outer join ({}) using (pid) 
-                                left outer join ({}) on pid = qid
+                            ({0}) left outer join ({1}) using (pid) 
+                                left outer join ({2}) on pid = qid
 
-                        ORDER BY numMatches DESC;
                      '''.format(mergedTableQuery, 
                                 numVotesTableQuery, 
                                 numAnsTableQuery)
+
+    fullSearchQuery = ''' 
+                    SELECT
+                        p.pid,
+                        pdate,
+                        title,
+                        body,
+                        poster,
+                        numVotes,
+                        numAns
+                    FROM 
+                        posts p,
+                        ({0}) as search
+                    WHERE
+                        p.pid = search.pid
+                    ORDER BY search.numMatches DESC;
+                    '''.format(searchQuery)
 
     return fullSearchQuery
                     
@@ -132,21 +153,17 @@ def getnumAnsTable():
 
     numAnsTable = '''
                     SELECT
-                        qid,
-                        count(pid) as numAns
-                    FROM
-                        answers 
-                    group by qid
+                        q.pid as qid,
+                        ifnull(count(a.pid), 0) as numAns
+                    FROM questions q LEFT OUTER JOIN answers a ON q.pid=qid
+                    GROUP BY q.pid
                 '''
 
     return numAnsTable
 
 
-
-
-
 if __name__ == '__main__':
-    conn = sqlite3.connect('./test.db')
+    conn = sqlite3.connect(sys.argv[1])
     curr = conn.cursor()
     searchPosts(conn, curr, 'rjej')
 
