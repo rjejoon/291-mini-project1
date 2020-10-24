@@ -4,47 +4,62 @@ import sqlite3
 def searchPosts(conn, curr, uid):
 
     prompt = "Enter keywords to search, each separated by a comma: "
+    # TODO add error checking
+
     keywords = input(prompt).lower().replace("'", "''").split(',')
     keywords = list(map(lambda kw : kw.strip(), keywords))
-    print(keywords)
-
-    curr.executescript(
-            '''drop table if exists searchResult;
-
-               create table searchResult (
-                    pid     char(4),
-                    numMatches  integer,
-                    numVotes integer,
-                    numAns integer,
-                    primary key (pid),
-                    foreign key (pid) references posts
-                );
-
-                insert into searchResult 
-                select pid, 0, 0, 0
-                from posts;
-            ''')
-
-    conn.commit()
-    
-
     keywords = {'kw{}'.format(i) : kw for i, kw in enumerate(keywords)}
-    print(keywords)
         
-    matchingQueries = []
-    for i, kw in enumerate(keywords.keys()):
-        matchingPostsQuery = getMatchingPosts(i)
-        matchingQueries.append(matchingPostsQuery)
+    fullSearchQuery = genSearchResult(keywords)
 
-    q = '\nUnion all\n'.join(matchingQueries) 
-    with open('./testQuery.sql', 'w') as f:
-        f.write(q)
+    # write full query to check
+    with open('./generatedSearchQuery.sql', 'w') as f:
+        f.write(fullSearchQuery)
 
-    curr.execute(q, keywords)
+    curr.execute(fullSearchQuery, keywords)
     for row in curr.fetchall():
         print(row)
+
+
+def genSearchResult(keywords):
+
+    matchingPostsQuery = '\nUnion all\n'.join([getMatchingPostsQuery(i) for i in range(len(keywords))])
+    mergedTableQuery = mergeMatchingTables(matchingPostsQuery)
+    numVotesTableQuery = getnumVotesTable()
+    numAnsTableQuery = getnumAnsTable()
+
+    fullSearchQuery = '''
+                        SELECT 
+                            pid, 
+                            numMatches,
+                            ifnull(numVotes, 0),
+                            numAns
+                        FROM
+                            ({}) left outer join ({}) using (pid) 
+                                left outer join ({}) on pid = qid
+
+                        ORDER BY numMatches DESC;
+                     '''.format(mergedTableQuery, 
+                                numVotesTableQuery, 
+                                numAnsTableQuery)
+
+    return fullSearchQuery
                     
-def getMatchingPosts(i):
+
+def mergeMatchingTables(matchingPostsQuery):
+
+    mergedTableQuery = '''
+            SELECT 
+                pid, 
+                sum(numTitleBodyMatches) + sum(numTagMatches) as numMatches
+            FROM
+                ({})
+            GROUP BY pid
+            '''.format(matchingPostsQuery)
+
+    return mergedTableQuery
+
+def getMatchingPostsQuery(i):
 
     matchingTitleBodyTable = '''
                             SELECT 
@@ -57,6 +72,7 @@ def getMatchingPosts(i):
                                 p.title LIKE '%'||:kw{0}||'%'
                                 OR p.body LIKE '%'||:kw{0}||'%'
                             '''.format(i) 
+
     matchingTagTable = '''
                         SELECT
                             pid,
@@ -68,6 +84,39 @@ def getMatchingPosts(i):
                         group by pid
                     '''.format(i)
 
+    matchingPostsQuery = '''
+                    SELECT 
+                        pid,
+                        ifnull(numTitleBodyMatches, 0) as numTitleBodyMatches,
+                        ifnull(numTagMatches, 0) as numTagMatches
+                    FROM 
+                        (SELECT pid, numTitleBodyMatches, numTagMatches
+
+                        FROM
+                            ({0}) 
+                                left outer join 
+                            ({1}) 
+                                using (pid) 
+
+                        union
+
+                        SELECT pid, numTitleBodyMatches, numTagMatches
+
+                        FROM
+                            ({1})
+                                left outer join
+                            ({0})
+                                using (pid)
+                        )
+                    '''.format(matchingTitleBodyTable, matchingTagTable)
+
+
+
+    return matchingPostsQuery
+
+
+def getnumVotesTable():
+
     numVotesTable = '''
                         SELECT
                             pid,
@@ -76,6 +125,10 @@ def getMatchingPosts(i):
                             votes v
                         GROUP BY pid
                     '''
+    return numVotesTable
+
+
+def getnumAnsTable():
 
     numAnsTable = '''
                     SELECT
@@ -86,55 +139,10 @@ def getMatchingPosts(i):
                     group by qid
                 '''
 
-    matchingPosts = '''
-                    SELECT pid, numTitleBodyMatches, numTagMatches
+    return numAnsTable
 
-                    FROM
-                        ({0}) 
-                            left outer join 
-                        ({1}) 
-                            using (pid) 
 
-                    union
 
-                    SELECT pid, numTitleBodyMatches, numTagMatches
-
-                    FROM
-                        ({1})
-                            left outer join
-                        ({0})
-                            using (pid)
-                    '''.format(matchingTitleBodyTable, matchingTagTable)
-
-    matchingPostsQuery = '''
-                        SELECT 
-                            pid, 
-                            numTitleBodyMatches + ifnull(numTagMatches, 0)
-                                as numMatches,
-                            ifnull(numVotes, 0),
-                            numAns
-                        FROM
-                            ({}) left outer join ({}) using (pid) 
-                                left outer join ({}) on pid = qid
-                     '''.format(matchingPosts, 
-                                numVotesTable, 
-                                numAnsTable)
-
-    # TODO add semicolon
-
-    # TODO currently working on only matches
-    return matchingPosts
-        
-         
-
-def isMatch(title, body):
-
-    for kw in keywords:
-        if (kw in title) or (kw in body):
-            return 1
-
-    return 0
-    
 
 
 if __name__ == '__main__':
