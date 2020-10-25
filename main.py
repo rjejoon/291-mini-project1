@@ -1,10 +1,8 @@
 import sqlite3
 import os 
 import sys
-import getpass
 
-from datetime import date
-from searchPosts import *       # TODO change to module
+from util import page
 
 
 def main():
@@ -18,31 +16,28 @@ def main():
     db = getDBFrom(sys.argv)
     conn, curr = initConnAndCurrFrom(db)
 
-    # TODO use try...except...finally
-    try:
-        run = True
-        while run:
-            
-            # first screen
-            uInput = input("\nOptions: (si) sign in, (su) sign up, (q)uit: ").lower()
+    # TODO use try...except...finally (implement this after testing since it doesn't give you line #)
 
-            if uInput == 'q':
-                run = False
-            elif uInput in ('si', 'su'):    # TODO checks strings twice. Prob change this to one if..else statement
-                if uInput == 'si':
-                    uid = signIn(conn, curr)
-                else:
-                    uid = signUp(conn, curr)
-                menu(conn, curr, uid)
+    # first screen
+    run = True
+    while run:
+        
+        uInput = input("\nOptions: (si) sign in, (su) sign up, (q)uit: ").lower()
+
+        if uInput == 'q':
+            run = False
+        elif uInput in ('si', 'su'):    # TODO checks strings twice. Prob change this to one if..else statement
+            if uInput == 'si':
+                uid = page.signIn(conn, curr)
             else:
-                print("error: invalid command")
+                uid = page.signUp(conn, curr)
+            page.mainMenu(conn, curr, uid)
+        else:
+            print("error: invalid command")
 
-    except Exception as e:
-        print(e)
-    finally:
-        print("Closing connection...")
-        conn.commit()
-        conn.close()
+    print("Closing connection...")
+    conn.commit()
+    conn.close()
 
 
 def initConnAndCurrFrom(db):
@@ -61,175 +56,6 @@ def initConnAndCurrFrom(db):
     return conn, curr
 
 
-def signIn(conn, curr):
-    '''
-    Prompts the user to enter their user ID and password. Checks if they exist in the database and Returns them.
-
-    Inputs: conn, curr
-    Returns: userID, password
-    '''
-
-    validInfo = False
-    while not validInfo:
-
-        uid = input('\nEnter your user ID: ')
-        pwd = getpass.getpass('Enter your password: ')
-
-        curr.execute('SELECT * FROM users WHERE uid = :userID AND pwd = :password;',
-                    {'userID': uid, 'password': pwd})
-
-        if curr.fetchone():
-            validInfo = True
-        else:
-            print('error: invalid user ID or password. Please try again.')
-        
-    print('You have successfully signed in.')
-    return uid
-
-
-def signUp(conn, curr):
-    '''
-    Prompts the user for an account information and saves in the database.
-
-    Keyword arguments:
-    conn -- sqlite3.Connection
-    curr -- sqlite3.Cursor
-    '''
-
-    valid = False
-    while not valid:
-
-        print()
-        # TODO uid must be 4 chars
-        uid = getID(conn, curr)
-        name = input("Enter your first and last name: ")
-        city = input("Enter your city: ")
-        pwd = getPassword()
-        crdate = str(date.today())
-            
-        print()
-        print("Please double check your information: ")
-        print("   id: {}".format(uid))
-        print("   name: {}".format(name))
-        print("   city: {}".format(city))
-
-        valid = checkValid()
-
-    print("Sign up successful!")
-
-    curr.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", 
-            [uid, name, pwd, city, crdate])
-
-    conn.commit()
-
-    return uid
-
-
-def getID(conn, curr):
-    '''
-    Gets an appropriate user id and returns it.
-
-    Keyword arguments:
-    conn -- sqlite3.Connection
-    curr -- sqlite3.Cursor
-    '''
-    valid = False
-    while not valid: 
-        uid = input("Enter your id: ")
-        curr.execute("SELECT * FROM users WHERE uid = ?;", [uid])
-        if curr.fetchone():
-            print("error: user id already taken.")
-        else:
-            valid = True
-
-    return uid
-
-
-def getPassword():
-    '''
-    Gets an appropriate password and returns it.
-    '''
-    valid = False
-    while not valid:
-        pwd = getpass.getpass("Enter your password: ")
-        pwd2 = getpass.getpass("Enter the password again: ")
-        if pwd == pwd2:
-            valid = True
-        else:
-            print("error: passwords do not match.")
-
-    return pwd
-
-
-def checkValid():
-    '''
-    Prompts the user to double check their account information and returns the result.
-    '''
-    while True:
-        checkValid = input("\nIs this correct? y/n ").lower()
-        if checkValid == 'y':
-            return True
-        elif checkValid == 'n':
-            return False
-
-
-def menu(conn, curr, uid):
-    '''
-    Displays the menu and Prompts the user to choose from some actions.
-
-    Inputs:
-        conn -- sqlite3.Connection
-        curr -- sqlite3.Cursor
-        uid -- uid of the current user
-    '''
-    valid = False
-    while not valid:
-        print('\n* * WELCOME {}! * *'.format(uid)) # TODO use nane of the user instead of uid
-        print('\n[ M E N U ]')
-        print('\n1. Post a question')
-        print('2. Search for posts')
-        print('   -> Vote on a post')
-        print('   -> Post an answer')
-        print('3. Sign out')
-        print('4. Quit')
-        option = input('\nChoose from 1-4: ')
-        if option == '1':
-            postQ(conn, curr, uid)
-        elif option == '2':
-            resultTable = searchPosts(curr)
-        
-            initLimit = 5
-            no, action = displaySearchResult(resultTable, initLimit)
-            targetPost = resultTable[no]
-            targetpid = targetPost[0]           # TODO row factory & use col name
-
-            if action == 1:
-                castVote(conn, curr, targetpid, uid)
-            elif action == 2:
-                postAns(conn, curr, uid, targetpid)
-
-        elif option == '3':
-            if checkSignout():
-                print('...')
-                print('You have been signed out.')
-                valid = True
-
-        elif option == '4':
-            sys.exit(0)
-
-
-def checkSignout():
-    '''
-    Checks if the user wants to sign out.
-    '''
-    while True:
-        signout = input('Do you want to sign out? y/n ').lower()
-        if signout == 'y':
-            return True
-        elif signout == 'n':
-            return False
-
-            
 def getDBFrom(argv):
 
     if len(argv) != 2:
@@ -239,163 +65,9 @@ def getDBFrom(argv):
     return argv[1]
 
 
-def postQ(conn, curr, poster):
-    '''
-    Prompts the user to post a question
-
-    Inputs: 
-        conn -- sqlite3.Connection
-        curr -- sqllite3.Connection
-        poster -- uid of the current user (str)
-    '''
-    print('\n< Post Question >')
-    infoList = getPInfo(curr)
-    if infoList:
-        infoList.append(poster) # infoList = [pid, pdate, title, body, poster]
-
-        curr.execute('INSERT INTO posts VALUES (?, ?, ?, ?, ?)', infoList)
-
-        curr.execute('INSERT INTO questions VALUES (?, NULL)', [infoList[0]])
-
-        conn.commit()
-
-        print('Posting Completed!')
 
 
-def postAns(conn, curr, poster, qid):
-    '''
-    Prompts the user to post an answer to the selected question
-    Assume the post type is question.
-    
-    Inputs: 
-        conn -- sqlite3.Connection
-        curr -- sqllite3.Connection
-        poster -- uid of the current user (str)
-        qid -- selected post (str)
-    '''
-    print('\n< Post Answer >')
 
-    infoList = getPInfo(curr) 
-    if infoList:
-        infoList.append(poster) # infoList = [pid, pdate, title, body, poster]
-
-        curr.execute('INSERT INTO posts VALUES (?, ?, ?, ?, ?)', infoList)
-
-        curr.execute('INSERT INTO answers VALUES (?, ?)', [infoList[0], qid])
-
-        conn.commit()
-
-        print('Posting Complete!')
-
-
-def getPInfo(curr):
-    '''
-    Gets an info for making a post and Returns a list of pid, pdate, title, body
-
-    Input: curr -- sqllite3.Connection
-    '''
-    valid = False
-    while not valid:
-        pid = getPid(curr)
-        pdate = str(date.today())
-        title = input("Enter your title: ")
-        body = input("Enter your body: ")
-
-        print('\nPlease double check your information: ')
-        # TODO user doesn't need to know about pid
-        print('   pid: {}'.format(pid))
-        print('   title: {}'.format(title))
-        print('   body: {}'.format(body))
-
-        if checkValid():
-            valid = True
-            return [pid, pdate, title, body]
-        else:
-            if not continuePost():
-                return False 
-
-
-def getPid(curr):
-    '''
-    Generates a new pid and Returns it.
-
-    Input: curr -- sqllite3.Connection
-    '''
-    curr.execute('SELECT * FROM posts;')
-    if not curr.fetchone():
-        pid = 'p001'
-    else:
-        pidNum = getLastPid(curr) + 1
-        pid = 'p{:03}'.format(pidNum)
-    return pid
-
-
-def getLastPid(curr):
-    '''
-    Gets the last pid (int) inserted in the database.
-
-    Input: curr -- sqllite3.Connection
-    '''
-    # only gets the numerical part of pid
-    curr.execute('SELECT substr(pid, 2, 4) as pid FROM posts ORDER BY pid DESC')
-    lastNum = int(curr.fetchone()[0])
-    return lastNum
-
-
-def continuePost():
-    '''
-    Confirms the users if they still want to make a post.
-    '''
-    while True:
-        checkValid = input('Do you still want to make a post? y/n ').lower()
-        if checkValid == 'y':
-            print()
-            return True
-        elif checkValid == 'n':
-            return False
-
-
-def castVote(conn, curr, pid, uid):
-    '''
-    Prompts the user to cast a vote to the selected post
-
-    Inputs: 
-        conn -- sqlite3.Connection
-        curr -- sqllite3.Connection
-        pid -- selected post (str)
-        uid -- uid of the current user (str)
-    '''
-    print('\n< Cast Vote >')
-    valid = False
-    while not valid:
-        confirm = input('Confirmation: Do you want to vote for this post? y/n ').lower()
-
-        if confirm == 'y':
-            # checks if the user has already voted for the selected post
-            curr.execute('SELECT * FROM votes WHERE pid = ? and uid = ?',[pid, uid])
-            if curr.fetchone():
-                print("You've already voted for this post.")
-
-            else:
-                curr.execute('SELECT * FROM votes;')
-                vdate = str(date.today())
-
-                if not curr.fetchone():
-                    vno = 1
-                else:
-                    # gets the max vno in the database
-                    maxVno = curr.execute('SELECT MAX(vno) FROM votes WHERE pid = ?;',[pid]).fetchone()[0]
-                    vno = int(maxVno) + 1
-                
-                curr.execute('INSERT INTO votes VALUES (?, ?, ?, ?)', [pid, vno, vdate, uid])
-                conn.commit()
-
-                print('Voting Completed!')
-            
-            valid = True
-
-        elif confirm == 'n':
-            valid = True
 
 
 if __name__ == "__main__":
