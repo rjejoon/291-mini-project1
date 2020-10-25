@@ -28,7 +28,6 @@ def main():
         else:
             print("error: command not found.")
 
-
     conn.commit()
     conn.close()
 
@@ -41,7 +40,7 @@ def initConnAndCurrFrom(db):
     db —- database file 
     '''
     dir_path = os.path.abspath(os.path.dirname(__file__)) + os.sep
-    db_path = dir_path + f_name
+    db_path = dir_path + db 
 
     conn = sqlite3.connect(db_path)
     curr = conn.cursor()

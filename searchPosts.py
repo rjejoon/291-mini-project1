@@ -26,7 +26,8 @@ def searchPosts(conn, curr, uid):
 
 def displaySearchResult(results):
 
-    print(results[0])
+    for row in results:
+        print(row)
     rowLens = [6, 7, 14, 19, 27, 9, 13, 15]
     rowNames = ['no.', 'pid', 'pdate', 'Title', 'Body', 'poster', '# of Votes', '# of Answers']
 
@@ -74,7 +75,8 @@ def genSearchResult(keywords):
                         body,
                         poster,
                         numVotes,
-                        numAns
+                        numAns,
+                        numMatches
                     FROM 
                         posts p,
                         ({0}) as search
