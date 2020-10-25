@@ -17,10 +17,12 @@ def main():
 
         if uInput == 'q':
             run = False
-        elif uInput == 'si':
-            uid = signIn(conn, curr)
-        elif uInput == 'su':
-            signUp(conn, curr)
+        elif uInput in ('si', 'su'):
+            if uInput == 'si':
+                uid = signIn(conn, curr)
+            else:
+                uid = signUp(conn, curr)
+            menu(conn, curr, uid)
         else:
             print("error: command not found.")
 
@@ -111,6 +113,8 @@ def signUp(conn, curr):
 
     conn.commit()
 
+    return uid
+
 
 def getID(conn, curr):
     '''
@@ -160,6 +164,51 @@ def checkValid():
             return False
 
 
+def menu(conn, curr, uid):
+    '''
+    Displays the menu and Prompts the user to choose from some actions.
+
+    Inputs:
+        conn -- sqlite3.Connection
+        curr -- sqlite3.Cursor
+        uid -- uid of the current user
+    '''
+    valid = False
+    while not valid:
+        print('\n* * WELCOME {}! * *'.format(uid))
+        print('\n[ M E N U ]')
+        print('\n1. Post a question')
+        print('2. Search for posts')
+        print('   -> Post an answer')
+        print('   -> Cast a vote')
+        print('3. Sign out')
+        option = input('\nChoose from 1-3. ')
+        if option == '1':
+            postQ(conn, curr, uid)
+        elif option == '2':
+            # search function
+            # postAns(conn, curr, uid, qid)
+            # castVote(conn, curr, pid, uid)
+            pass
+        elif option == '3':
+            if checkSignout():
+                print('...')
+                print('You have been signed out.')
+                valid = True
+
+
+def checkSignout():
+    '''
+    Checks if the user wants to sign out.
+    '''
+    while True:
+        signout = input('Do you want to sign out? y/n ').lower()
+        if signout == 'y':
+            return True
+        elif signout == 'n':
+            return False
+
+
 def postQ(conn, curr, poster):
     '''
     Prompts the user to post a question
@@ -179,6 +228,8 @@ def postQ(conn, curr, poster):
         curr.execute('INSERT INTO questions VALUES (?, NULL)', [infoList[0]])
 
         conn.commit()
+
+        print('Posting Completed!')
 
 
 def postAns(conn, curr, poster, qid):
@@ -205,6 +256,8 @@ def postAns(conn, curr, poster, qid):
             curr.execute('INSERT INTO answers VALUES (?, ?)', [infoList[0], qid])
 
             conn.commit()
+
+            print('Posting Completed!')
 
     else:
         print('Sorry! You are not able to answer to this post.')
@@ -310,6 +363,8 @@ def castVote(conn, curr, pid, uid):
                 
                 curr.execute('INSERT INTO votes VALUES (?, ?, ?, ?)', [pid, vno, vdate, uid])
                 conn.commit()
+
+                print('Voting Completed!')
             
             valid = True
 
