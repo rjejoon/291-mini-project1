@@ -1,8 +1,9 @@
 import sqlite3
 import sys
+import os 
 
 
-def searchPosts(conn, curr, uid):
+def searchPosts(curr):
 
     prompt = "Enter keywords to search, each separated by a comma: "
     # TODO add error checking
@@ -13,32 +14,116 @@ def searchPosts(conn, curr, uid):
         
     fullSearchQuery = genSearchResult(keywords)
 
-    # write full query to check
-    with open('./generatedSearchQuery.sql', 'w') as f:
+    # write full query for checking
+    dir_path = os.path.abspath(os.path.dirname(__file__)) + os.sep + 'test'
+    testf_path = 'generatedSearchQuery.sql'
+    if not os.path.isdir(dir_path):
+        testf_path = dir_path + testf_path 
+
+    with open(testf_path, 'w') as f:
         f.write(fullSearchQuery)
 
     curr.execute(fullSearchQuery, keywords)
     resultTable = curr.fetchall()
 
-    displaySearchResult(resultTable, limit=5)
-
-    #TODO integrate moe's input function for option
-    remainingRows = len(resultTable) - 5
-    if remainingRows > 0:
-        if remainingRows == 1:
-            prompt = "There are {} more row to display. Enter 'y' to view more: ".format(remainingRows)
-        else:
-            prompt = "There are {} more rows to display. Enter 'y' to view more: ".format(remainingRows)
-        viewMore = input(prompt)
-        if viewMore == 'y':
-            print()
-            displaySearchResult(resultTable, limit=len(resultTable))
-        # TODO add input checking 
-
     return resultTable
 
 
-def displaySearchResult(results, limit=5):
+def displaySearchResult(resultTable, limit):
+
+    display(resultTable, limit)
+
+    remainingRows = len(resultTable) - limit
+    if remainingRows > 0:
+        suffix = 's' if remainingRows > 1 else ''
+        n = limit if len(resultTable) > limit else len(resultTable)
+        domain = "1-{}".format(n) if n > 1 else '1'
+        prompt = "There are {} more row{} to display.\nPress enter to view more, or pick no. ({}) to select: ".format(remainingRows, suffix, domain)
+
+        no = action = None
+        valid = False
+        while not valid:
+            print()
+            i = input(prompt)
+            if i.isdigit():
+                valid = True
+                i = int(i)
+                no = i - 1      # to match zero-index array
+                postType = getPostType(resultTable[no])
+                action = getAction(no, postType)
+            elif i in ['y', '']:
+                #TODO should display 5 more at a time instad of displaying full result
+                valid = True
+                print()
+                display(resultTable, limit=len(resultTable))
+                no, action = getActionFromFullSearch(len(resultTable), postType)
+            else:
+                print("error: invalid command")
+
+    return no, action
+
+
+def getActionFromFullSearch(n, postType):
+
+    be_verb = 'are' if n > 1 else 'is'
+    suffix = 's' if n > 1 else ''
+    print("There {} {} matching post{}.".format(be_verb, n, suffix), sep= ' ')
+
+    domain = "1-{}".format(n) if n > 1 else '1'
+    prompt = "Pick post no. ({}) to select: ".format(domain)
+    valid = False
+    while not valid:
+        no = input(prompt)
+        if no.isdigit(): 
+            no = int(no)
+            if 1 <= no <= n:
+                valid = True
+                no -= 1     # to match zero-index array
+        else:
+            print("error: out of range")
+
+    postType = getPostType(resultTable[no])
+    action = getAction(no, postType)
+
+    return no, action
+
+
+def getPostType(resultRow):
+
+    # resultRow = (pid, pdate, title, body, poster, numVotes, numAns, numMatches)
+
+    # TODO could use row factory to use name of the col instead index.
+    return 'a' if not resultRow[6] else 'q'
+
+
+def getAction(no, postType):
+
+    '''
+    actions: 
+        1: Vote
+        2: Post answer
+    '''
+    ansOpt = "   2. Write an answer\n" if postType=='q' else '' 
+
+    valid = False
+    while not valid:
+        print()
+        print("Choose an option to:")
+        print("   1. Vote on the post")
+        print(ansOpt)
+        action = input()
+        validRange = [1, 2] if postType=='q' else [1]
+        if action.isdigit() and int(action) in validRange:
+            action = int(action)
+            valid = True
+        else:
+            print("error: invalid command")
+    
+    return action
+
+
+
+def display(results, limit=5):
 
     rowNameLenDict = {'no.' : 6,
                       'pid' : 7,
@@ -53,6 +138,7 @@ def displaySearchResult(results, limit=5):
     for rowName in rowNameLenDict.keys():
         header += rowName.center(rowNameLenDict[rowName], ' ') + '|'
 
+    # lb: line breaker
     lb = '|' + '|'.join(list(map(lambda s:'-'*s, rowNameLenDict.values()))) + '|'
     
     print(lb, header, sep='\n')
@@ -218,7 +304,7 @@ def getnumAnsTable():
 if __name__ == '__main__':
     conn = sqlite3.connect(sys.argv[1])
     curr = conn.cursor()
-    searchPosts(conn, curr, 'rjej')
+    searchPosts(curr)
 
 
     

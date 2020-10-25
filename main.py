@@ -2,7 +2,10 @@ import sqlite3
 import os 
 import sys
 import getpass
+
 from datetime import date
+from searchPosts import *       # TODO change to module
+
 
 def main():
     '''
@@ -12,29 +15,34 @@ def main():
         0: Success
         1: invalid command line argument
     '''
-    db = getDBFromArgv(sys.argv)
+    db = getDBFrom(sys.argv)
     conn, curr = initConnAndCurrFrom(db)
 
     # TODO use try...except...finally
-    run = True
-    while run:
-        
-        # first screen
-        uInput = input("\nOptions: (si) sign in, (su) sign up, (q)uit: ").lower()
+    try:
+        run = True
+        while run:
+            
+            # first screen
+            uInput = input("\nOptions: (si) sign in, (su) sign up, (q)uit: ").lower()
 
-        if uInput == 'q':
-            run = False
-        elif uInput in ('si', 'su'):
-            if uInput == 'si':
-                uid = signIn(conn, curr)
+            if uInput == 'q':
+                run = False
+            elif uInput in ('si', 'su'):    # TODO checks strings twice. Prob change this to one if..else statement
+                if uInput == 'si':
+                    uid = signIn(conn, curr)
+                else:
+                    uid = signUp(conn, curr)
+                menu(conn, curr, uid)
             else:
-                uid = signUp(conn, curr)
-            menu(conn, curr, uid)
-        else:
-            print("error: invalid command")
+                print("error: invalid command")
 
-    conn.commit()
-    conn.close()
+    except Exception as e:
+        print(e)
+    finally:
+        print("Closing connection...")
+        conn.commit()
+        conn.close()
 
 
 def initConnAndCurrFrom(db):
@@ -176,26 +184,38 @@ def menu(conn, curr, uid):
     '''
     valid = False
     while not valid:
-        print('\n* * WELCOME {}! * *'.format(uid))
+        print('\n* * WELCOME {}! * *'.format(uid)) # TODO use nane of the user instead of uid
         print('\n[ M E N U ]')
         print('\n1. Post a question')
         print('2. Search for posts')
+        print('   -> Vote on a post')
         print('   -> Post an answer')
-        print('   -> Cast a vote')
         print('3. Sign out')
-        option = input('\nChoose from 1-3. ')
+        print('4. Quit')
+        option = input('\nChoose from 1-4: ')
         if option == '1':
             postQ(conn, curr, uid)
         elif option == '2':
-            # search function
-            # postAns(conn, curr, uid, qid)
-            # castVote(conn, curr, pid, uid)
-            pass
+            resultTable = searchPosts(curr)
+        
+            initLimit = 5
+            no, action = displaySearchResult(resultTable, initLimit)
+            targetPost = resultTable[no]
+            targetpid = targetPost[0]           # TODO row factory & use col name
+
+            if action == 1:
+                castVote(conn, curr, targetpid, uid)
+            elif action == 2:
+                postAns(conn, curr, uid, targetpid)
+
         elif option == '3':
             if checkSignout():
                 print('...')
                 print('You have been signed out.')
                 valid = True
+
+        elif option == '4':
+            sys.exit(0)
 
 
 def checkSignout():
@@ -210,7 +230,7 @@ def checkSignout():
             return False
 
             
-def getDBFromArgv(argv):
+def getDBFrom(argv):
 
     if len(argv) != 2:
         print("Usage: python3 main.py [file]") 
@@ -245,6 +265,7 @@ def postQ(conn, curr, poster):
 def postAns(conn, curr, poster, qid):
     '''
     Prompts the user to post an answer to the selected question
+    Assume the post type is question.
     
     Inputs: 
         conn -- sqlite3.Connection
@@ -254,23 +275,17 @@ def postAns(conn, curr, poster, qid):
     '''
     print('\n< Post Answer >')
 
-    # checks if the selected post is a question
-    curr.execute('SELECT * from questions WHERE pid = ?;',[qid])
-    if curr.fetchone():
-        infoList = getPInfo(curr) 
-        if infoList:
-            infoList.append(poster) # infoList = [pid, pdate, title, body, poster]
+    infoList = getPInfo(curr) 
+    if infoList:
+        infoList.append(poster) # infoList = [pid, pdate, title, body, poster]
 
-            curr.execute('INSERT INTO posts VALUES (?, ?, ?, ?, ?)', infoList)
+        curr.execute('INSERT INTO posts VALUES (?, ?, ?, ?, ?)', infoList)
 
-            curr.execute('INSERT INTO answers VALUES (?, ?)', [infoList[0], qid])
+        curr.execute('INSERT INTO answers VALUES (?, ?)', [infoList[0], qid])
 
-            conn.commit()
+        conn.commit()
 
-            print('Posting Completed!')
-
-    else:
-        print('Sorry! You are not able to answer to this post.')
+        print('Posting Complete!')
 
 
 def getPInfo(curr):
@@ -287,6 +302,7 @@ def getPInfo(curr):
         body = input("Enter your body: ")
 
         print('\nPlease double check your information: ')
+        # TODO user doesn't need to know about pid
         print('   pid: {}'.format(pid))
         print('   title: {}'.format(title))
         print('   body: {}'.format(body))
@@ -321,8 +337,8 @@ def getLastPid(curr):
     Input: curr -- sqllite3.Connection
     '''
     # only gets the numerical part of pid
-    curr.execute('SELECT substr(pid, 2, 4) FROM posts')
-    lastNum = int(curr.fetchall()[-1][0])
+    curr.execute('SELECT substr(pid, 2, 4) as pid FROM posts ORDER BY pid DESC')
+    lastNum = int(curr.fetchone()[0])
     return lastNum
 
 
