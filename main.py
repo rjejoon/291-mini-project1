@@ -157,6 +157,7 @@ def checkValid():
         elif checkValid == 'n':
             return False
 
+
 def getDBFromArgv(argv):
 
     if len(argv) != 2:

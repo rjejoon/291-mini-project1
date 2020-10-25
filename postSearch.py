@@ -18,13 +18,32 @@ def searchPosts(conn, curr, uid):
         f.write(fullSearchQuery)
 
     curr.execute(fullSearchQuery, keywords)
-    displaySearchResult(curr.fetchall())
+    resultTable = curr.fetchall()
+    displaySearchResult(resultTable)
 
+    return resultTable
 
 
 def displaySearchResult(results):
 
-    pass 
+    print(results[0])
+    rowLens = [6, 7, 14, 19, 27, 9, 13, 15]
+    rowNames = ['no.', 'pid', 'pdate', 'Title', 'Body', 'poster', '# of Votes', '# of Answers']
+
+    lb = '|' + '|'.join(list(map(lambda s:'-'*s, rowLens))) + '|'
+    
+    # TODO use rowNames to generate header
+    header = "|  no. |  pid  |     pdate    |       Title       |            Body           |  poster |  # of Votes |  # of Answers |"
+    print(lb, header, sep='\n')
+
+    for i, row in enumerate(results):
+        print(lb, sep='\n')
+        r = '|   {0}  |  {1} |  {2}  |  {3}|'.format(i+1,
+                                                     row[0], 
+                                                     row[1], 
+                                                     row[2], 
+                                                     row[3])
+        
 
 def genSearchResult(keywords):
 
