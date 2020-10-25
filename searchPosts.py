@@ -19,31 +19,63 @@ def searchPosts(conn, curr, uid):
 
     curr.execute(fullSearchQuery, keywords)
     resultTable = curr.fetchall()
-    displaySearchResult(resultTable)
+
+    displaySearchResult(resultTable, limit=5)
+
+    #TODO integrate moe's input function for option
+    remainingRows = len(resultTable) - 5
+    if remainingRows > 0:
+        if remainingRows == 1:
+            prompt = "There are {} more row to display. Enter 'y' to view more: ".format(remainingRows)
+        else:
+            prompt = "There are {} more rows to display. Enter 'y' to view more: ".format(remainingRows)
+        viewMore = input(prompt)
+        if viewMore == 'y':
+            print()
+            displaySearchResult(resultTable, limit=len(resultTable))
+        # TODO add input checking 
 
     return resultTable
 
 
-def displaySearchResult(results):
+def displaySearchResult(results, limit=5):
 
-    for row in results:
-        print(row)
-    rowLens = [6, 7, 14, 19, 27, 9, 13, 15]
-    rowNames = ['no.', 'pid', 'pdate', 'Title', 'Body', 'poster', '# of Votes', '# of Answers']
+    rowNameLenDict = {'no.' : 6,
+                      'pid' : 7,
+                      'pdate': 14,
+                      'Title': 19,
+                      'Body': 27,
+                      'poster': 9,
+                      '# of Votes': 13,
+                      '# of Answers': 15}
 
-    lb = '|' + '|'.join(list(map(lambda s:'-'*s, rowLens))) + '|'
+    header = '|'
+    for rowName in rowNameLenDict.keys():
+        header += rowName.center(rowNameLenDict[rowName], ' ') + '|'
+
+    lb = '|' + '|'.join(list(map(lambda s:'-'*s, rowNameLenDict.values()))) + '|'
     
-    # TODO use rowNames to generate header
-    header = "|  no. |  pid  |     pdate    |       Title       |            Body           |  poster |  # of Votes |  # of Answers |"
     print(lb, header, sep='\n')
 
     for i, row in enumerate(results):
+        if i >= limit:
+            break
         print(lb, sep='\n')
-        r = '|   {0}  |  {1} |  {2}  |  {3}|'.format(i+1,
-                                                     row[0], 
-                                                     row[1], 
-                                                     row[2], 
-                                                     row[3])
+        r = '|'
+        d = rowNameLenDict
+        r += str(i+1).center(d['no.'], ' ') + '|'
+        r += row[0].center(d['pid'], ' ') + '|'
+        r += row[1].center(d['pdate'], ' ') + '|'
+        r += row[2][:d['Title']-2].rjust(d['Title'], ' ') + '|'
+        r += row[3][:d['Body']-2].rjust(d['Body'], ' ') + '|'
+        r += row[4].center(d['poster'], ' ') + '|'
+        r += str(row[5]).center(d['# of Votes'], ' ') + '|'
+        r += str(row[6]).center(d['# of Answers'], ' ') + '|'
+
+        print(r, sep='\n')
+
+    print(lb)
+
         
 
 def genSearchResult(keywords):
