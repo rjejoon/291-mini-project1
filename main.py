@@ -161,6 +161,15 @@ def checkValid():
             return False
 
 
+def getDBFromArgv(argv):
+
+    if len(argv) != 2:
+        print("Usage: python3 main.py [file]") 
+        sys.exit(1)
+    
+    return argv[1]
+
+
 def menu(conn, curr, uid):
     '''
     Displays the menu and Prompts the user to choose from some actions.
@@ -204,15 +213,6 @@ def checkSignout():
             return True
         elif signout == 'n':
             return False
-
-            
-def getDBFromArgv(argv):
-
-    if len(argv) != 2:
-        print("Usage: python3 main.py [file]") 
-        sys.exit(1)
-    
-    return argv[1]
 
 
 def postQ(conn, curr, poster):
