@@ -7,9 +7,12 @@ from datetime import date
 def main():
     '''
     The main loop of the program.
+
+    Error codes:
+        0: Success
+        1: invalid command line argument
     '''
     db = getDBFromArgv(sys.argv)
-
     conn, curr = initConnAndCurrFrom(db)
 
     # TODO use try...except...finally
@@ -23,10 +26,11 @@ def main():
             run = False
         elif uInput == 'si':
             uid = signIn(conn, curr)
+            signInPage(conn, curr, uid)
         elif uInput == 'su':
             signUp(conn, curr)
         else:
-            print("error: command not found.")
+            print("error: invalid command")
 
     conn.commit()
     conn.close()
@@ -87,6 +91,7 @@ def signUp(conn, curr):
     while not valid:
 
         print()
+        # TODO uid must be 4 chars
         uid = getID(conn, curr)
         name = input("Enter your first and last name: ")
         city = input("Enter your city: ")
