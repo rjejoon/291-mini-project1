@@ -1,5 +1,7 @@
 import sys
 import getpass
+
+from datetime import date
 from user import action
 
 
@@ -37,9 +39,10 @@ def mainMenu(conn, curr, uid):
                 action.castVote(conn, curr, targetpid, uid)
             elif opt == 2:
                 action.postAns(conn, curr, uid, targetpid)
+            
 
         elif option == '3':
-            if page.checkSignout():
+            if checkSignout():
                 print('...')
                 print('You have been signed out.')
                 valid = True
@@ -92,6 +95,7 @@ def signUp(conn, curr):
         uid = getID(conn, curr)
         name = input("Enter your first and last name: ")
         city = input("Enter your city: ")
+        # TODO pwd can only have alphanumeric characters.
         pwd = getPassword()
         crdate = str(date.today())
             

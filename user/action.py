@@ -153,11 +153,14 @@ def displaySearchResult(resultTable, limit):
             else:
                 print("error: invalid command")
 
+    # TODO if len(remainingRows) < 0: no, action are None
+
     return no, action
 
 
 def getActionFromFullSearch(n, resultTable):
 
+    # TODO 
     be_verb = 'are' if n > 1 else 'is'
     suffix = 's' if n > 1 else ''
     print("There {} {} matching post{}.".format(be_verb, n, suffix), sep= ' ')
@@ -187,7 +190,8 @@ def getPostType(resultRow):
     # resultRow = (pid, pdate, title, body, poster, numVotes, numAns, numMatches)
 
     # TODO could use row factory to use name of the col instead index.
-    return 'a' if not resultRow[6] else 'q'
+    print('q' if isinstance(resultRow[6], int) else 'a')
+    return 'q' if isinstance(resultRow[6], int) else 'a'
 
 
 def getAction(no, postType):
@@ -463,6 +467,17 @@ def continuePost():
         checkValid = input('Do you still want to make a post? y/n ').lower()
         if checkValid == 'y':
             print()
+            return True
+        elif checkValid == 'n':
+            return False
+
+def checkValid():
+    '''
+    Prompts the user to double check their account information and returns the result.
+    '''
+    while True:
+        checkValid = input("\nIs this correct? y/n ").lower()
+        if checkValid == 'y':
             return True
         elif checkValid == 'n':
             return False
