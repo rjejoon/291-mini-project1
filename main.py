@@ -1,6 +1,7 @@
 import sqlite3
 import os 
 import sys
+import traceback
 
 from util import page
 
@@ -18,26 +19,29 @@ def main():
 
     # TODO use try...except...finally (implement this after testing since it doesn't give you line #)
 
-    # first screen
-    run = True
-    while run:
-        
-        uInput = input("\nOptions: (si) sign in, (su) sign up, (q)uit: ").lower()
+    try:
+        # first screen
+        run = True
+        while run:
+            
+            uInput = input("\nOptions: (si) sign in, (su) sign up, (q)uit: ").lower()
 
-        if uInput == 'q':
-            run = False
-        elif uInput in ('si', 'su'):    # TODO checks strings twice. Prob change this to one if..else statement
-            if uInput == 'si':
-                uid = page.signIn(conn, curr)
+            if uInput == 'q':
+                run = False
+            elif uInput in ('si', 'su'):    # TODO checks strings twice. Prob change this to one if..else statement
+                if uInput == 'si':
+                    uid = page.signIn(conn, curr)
+                else:
+                    uid = page.signUp(conn, curr)
+                page.mainMenu(conn, curr, uid)
             else:
-                uid = page.signUp(conn, curr)
-            page.mainMenu(conn, curr, uid)
-        else:
-            print("error: invalid command")
-
-    print("Closing connection...")
-    conn.commit()
-    conn.close()
+                print("error: invalid command")
+    except:
+        print(traceback.format_exc())
+    finally:
+        print("Closing connection...")
+        conn.commit()
+        conn.close()
 
 
 def initConnAndCurrFrom(db):
