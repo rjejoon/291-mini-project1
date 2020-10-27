@@ -75,6 +75,7 @@ create table answers (
 
 
 insert into users values ('rjej', 'Kevin Ryu', 'rjj0220', 'Regina', date('now'));
+insert into privileged values ('rjej');
 insert into users values ('moe', 'Moe Numasawa', '1234', 'Edmonton', date('now')); 
 
 

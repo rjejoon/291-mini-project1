@@ -3,6 +3,7 @@ import getpass
 
 from datetime import date
 from user import action
+from user.privileged import action as privAction
 
 
 def mainMenu(conn, curr, uid):
@@ -14,6 +15,14 @@ def mainMenu(conn, curr, uid):
         curr -- sqlite3.Cursor
         uid -- uid of the current user
     '''
+    isPriv = isPrivileged(curr, uid)
+    actionOpts = {'vp': 1,
+                  'wa': 2,
+                  'ma': 3,
+                  'gb': 4,
+                  't': 5,
+                  'ep': 6,
+                  }
     valid = False
     while not valid:
         print('\n* * WELCOME {}! * *'.format(uid)) # TODO use nane of the user instead of uid
@@ -31,7 +40,8 @@ def mainMenu(conn, curr, uid):
             resultTable = action.searchPosts(curr)
         
             initLimit = 5
-            no, opt = action.displaySearchResult(resultTable, initLimit)
+            no, act = action.displaySearchResult(resultTable, isPriv, initLimit)
+            opt = actionOpts[act]
             targetPost = resultTable[no]
             targetpid = targetPost[0]           # TODO row factory & use col name
 
@@ -39,8 +49,17 @@ def mainMenu(conn, curr, uid):
                 action.castVote(conn, curr, targetpid, uid)
             elif opt == 2:
                 action.postAns(conn, curr, uid, targetpid)
+            elif opt == 3:
+                privAction.markAnswer(conn, curr, targetpid)
+            elif opt == 4:
+                # privAction.badge
+                pass
+            elif opt == 5:
+                # privAction.tag
+                pass
+            elif opt == 6:
+                privAction.edit(conn, curr, targetpid)
             
-
         elif option == '3':
             if checkSignout():
                 print('...')
@@ -175,3 +194,10 @@ def checkValid():
             return True
         elif checkValid == 'n':
             return False
+
+
+def isPrivileged(curr, uid):
+
+    curr.execute("SELECT uid FROM privileged where uid = ?", (uid, ))
+    
+    return True if len(curr.fetchone()) > 0 else False

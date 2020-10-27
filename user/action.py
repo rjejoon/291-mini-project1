@@ -122,7 +122,7 @@ def castVote(conn, curr, pid, uid):
             valid = True
 
 
-def displaySearchResult(resultTable, limit):
+def displaySearchResult(resultTable, isPriv, limit):
 
     display(resultTable, limit)
 
@@ -143,13 +143,14 @@ def displaySearchResult(resultTable, limit):
                 i = int(i)
                 no = i - 1      # to match zero-index array
                 postType = getPostType(resultTable[no])
-                action = getAction(no, postType)
+                action = getAction(postType, isPriv)
             elif i in ['y', '']:
                 #TODO should display 5 more at a time instad of displaying full result
                 valid = True
                 print()
                 display(resultTable, limit=len(resultTable))
-                no, action = getActionFromFullSearch(len(resultTable), resultTable)
+                # TODO get rid of getActionFromFullSearch
+                no, action = getActionFromFullSearch(len(resultTable), resultTable, isPriv)
             else:
                 print("error: invalid command")
 
@@ -158,7 +159,7 @@ def displaySearchResult(resultTable, limit):
     return no, action
 
 
-def getActionFromFullSearch(n, resultTable):
+def getActionFromFullSearch(n, resultTable, isPriv):
 
     # TODO 
     be_verb = 'are' if n > 1 else 'is'
@@ -180,7 +181,7 @@ def getActionFromFullSearch(n, resultTable):
                 print("error: out of range")
 
     postType = getPostType(resultTable[no])
-    action = getAction(no, postType)
+    action = getAction(postType, isPriv)
 
     return no, action
 
@@ -190,35 +191,48 @@ def getPostType(resultRow):
     # resultRow = (pid, pdate, title, body, poster, numVotes, numAns, numMatches)
 
     # TODO could use row factory to use name of the col instead index.
-    print('q' if isinstance(resultRow[6], int) else 'a')
     return 'q' if isinstance(resultRow[6], int) else 'a'
 
 
-def getAction(no, postType):
+def getAction(postType, isPriv):
 
     '''
     actions: 
         1: Vote
         2: Post answer
     '''
-    ansOpt = "   2. Write an answer\n" if postType=='q' else '' 
+    options = {'vp': "Vote on the post"}
+    quesOption = {'wa': "Write an answer"}
+
+    privOptions = {
+                    'gb': "Give a badge",
+                    't': "Add a tag",
+                    'ep': "Edit the post"
+                    }
+
+    privAnsOption = {'ma': "Mark as accepted"}
+
+    if postType == 'q':
+        options.update(quesOption)
+    elif postType == 'a':
+        privOptions.update(privAnsOption)
+    if isPriv:
+        options.update(privOptions)
+        
+    print("Choose an option to:\n")
+    for cmd, option in options.items():
+        print("   {0}. {1}".format(cmd, option))
+    print()
 
     valid = False
     while not valid:
-        print()
-        print("Choose an option to:")
-        print("   1. Vote on the post")
-        print(ansOpt)
-        action = input()
-        validRange = [1, 2] if postType=='q' else [1]
-        if action.isdigit() and int(action) in validRange:
-            action = int(action)
+        cmd = input("Enter a command... ")
+        if cmd in options.keys():
             valid = True
         else:
             print("error: invalid command")
     
-    return action
-
+    return cmd
 
 
 def display(results, limit=5):
