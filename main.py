@@ -17,13 +17,12 @@ def main():
     db = getDBFrom(sys.argv)
     conn, curr = initConnAndCurrFrom(db)
 
-    # TODO use try...except...finally (implement this after testing since it doesn't give you line #)
-
+    # TODO clear out the terminal whenever user goes to the first screen
     try:
         # first screen
         run = True
         while run:
-            
+            # TODO change interface of the first screen    
             uInput = input("\nOptions: (si) sign in, (su) sign up, (q)uit: ").lower()
 
             if uInput == 'q':

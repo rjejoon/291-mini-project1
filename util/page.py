@@ -3,7 +3,7 @@ import getpass
 
 from datetime import date
 from user import action
-from user.privileged import action as privAction
+from user.privileged import action as privAction # TODO change name 
 
 
 def mainMenu(conn, curr, uid):
@@ -25,12 +25,11 @@ def mainMenu(conn, curr, uid):
                   }
     valid = False
     while not valid:
+        # TODO change interface
         print('\n* * WELCOME {}! * *'.format(uid)) # TODO use nane of the user instead of uid
         print('\n[ M E N U ]')
         print('\n1. Post a question')
         print('2. Search for posts')
-        print('   -> Vote on a post')
-        print('   -> Post an answer')
         print('3. Sign out')
         print('4. Quit')
         option = input('\nChoose from 1-4: ')
@@ -43,6 +42,7 @@ def mainMenu(conn, curr, uid):
             no, act = action.displaySearchResult(resultTable, isPriv, initLimit)
             opt = actionOpts[act]
             targetPost = resultTable[no]
+            targetUid = resultTable[4]
             targetpid = targetPost[0]           # TODO row factory & use col name
 
             if opt == 1:
@@ -52,11 +52,9 @@ def mainMenu(conn, curr, uid):
             elif opt == 3:
                 privAction.markAnswer(conn, curr, targetpid)
             elif opt == 4:
-                # privAction.badge
-                pass
+                privAction.giveBadge(conn, curr, targetUid)
             elif opt == 5:
-                # privAction.tag
-                pass
+                privAction.addTag(conn, curr, targetpid)
             elif opt == 6:
                 privAction.edit(conn, curr, targetpid)
             
@@ -78,6 +76,7 @@ def signIn(conn, curr):
     Returns: userID, password
     '''
 
+    # TODO user should be able to go back to the first screen
     validInfo = False
     while not validInfo:
 
@@ -110,7 +109,7 @@ def signUp(conn, curr):
     while not valid:
 
         print()
-        # TODO uid must be 4 chars
+        # TODO uid must be 4 chars 
         uid = getID(conn, curr)
         name = input("Enter your first and last name: ")
         city = input("Enter your city: ")
@@ -156,6 +155,7 @@ def getID(conn, curr):
     conn -- sqlite3.Connection
     curr -- sqlite3.Cursor
     '''
+    # TODO trim it to 4 chars, or allow only at most 4 chars
     valid = False
     while not valid: 
         uid = input("Enter your id: ")
@@ -193,6 +193,7 @@ def checkValid():
         if checkValid == 'y':
             return True
         elif checkValid == 'n':
+            # TODO Do you want to still continue signing up?
             return False
 
 

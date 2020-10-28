@@ -29,6 +29,7 @@ def postQ(conn, curr, poster):
 
 def searchPosts(curr):
 
+    # TODO interface
     prompt = "Enter keywords to search, each separated by a comma: "
     # TODO add error checking
 
@@ -450,26 +451,21 @@ def getPid(curr):
 
     Input: curr -- sqllite3.Connection
     '''
-    # TODO we don't know if the pid format is p001...
+    pid = None
     curr.execute('SELECT * FROM posts;')
-    if not curr.fetchone():
+    if not curr.fetchone():     # no posts in db
         pid = 'p001'
     else:
-        pidNum = getLastPid(curr) + 1
-        pid = 'p{:03}'.format(pidNum)
+        isUnique = False
+        i = 2
+        while not isUnique:
+            n = i
+            pid = 'p{:03}'.format(n)
+            curr.execute("SELECT * FROM posts WHERE pid=?;"(pid, ))
+            if len(curr.fetchone()) == 0:
+                isUnique = True
+            i += 1
     return pid
-
-
-def getLastPid(curr):
-    '''
-    Gets the last pid (int) inserted in the database.
-
-    Input: curr -- sqllite3.Connection
-    '''
-    # only gets the numerical part of pid
-    curr.execute('SELECT substr(pid, 2, 4) as pid FROM posts ORDER BY pid DESC')
-    lastNum = int(curr.fetchone()[0])
-    return lastNum
 
 
 def continuePost():
