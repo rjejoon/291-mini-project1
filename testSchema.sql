@@ -98,6 +98,13 @@ insert into tags values ('p003', 'Database');
 insert into posts values ('p004', date('now'), 'What is database?', '3Database, database', 'rjej');
 insert into questions values ('p004', null);
 
+insert into posts values ('p005', date('now'), 'What is database?', '4Database, database', 'rjej');
+insert into questions values ('p005', null);
+insert into tags values ('p005', 'Database');
+
+insert into posts values ('p006', date('now'), 'What is database?', '3Database, database', 'rjej');
+insert into questions values ('p006', null);
+
 
 
 insert into badges values ('excellent question','gold');

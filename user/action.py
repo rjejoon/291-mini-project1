@@ -125,61 +125,58 @@ def castVote(conn, curr, pid, uid):
 
 def displaySearchResult(resultTable, isPriv, limit):
 
-    display(resultTable, limit)
-
     no = action = None
-    remainingRows = len(resultTable) - limit
-    if remainingRows > 0:
-        suffix = 's' if remainingRows > 1 else ''
-        n = limit if len(resultTable) > limit else len(resultTable)
-        domain = "1-{}".format(n) if n > 1 else '1'
-        prompt = "There are {} more row{} to display.\nPress enter to view more, or pick no. ({}) to select: ".format(remainingRows, suffix, domain)
+    totalRows = len(resultTable)
+    remainingRows = totalRows - limit
+    croppedTable = resultTable
+    start = 1
 
-        valid = False
-        while not valid:
-            print()
-            i = input(prompt)
-            if i.isdigit():
-                valid = True
-                i = int(i)
-                no = i - 1      # to match zero-index array
-                postType = getPostType(resultTable[no])
-                action = getAction(postType, isPriv)
-            elif i in ['y', '']:
-                #TODO should display 5 more at a time instad of displaying full result
-                valid = True
-                print()
-                display(resultTable, limit=len(resultTable))
-                # TODO get rid of getActionFromFullSearch
-                no, action = getActionFromFullSearch(len(resultTable), resultTable, isPriv)
-            else:
-                print("error: invalid command")
-
-    # TODO if len(remainingRows) < 0: no, action are None
-
-    return no, action
-
-
-def getActionFromFullSearch(n, resultTable, isPriv):
-
-    # TODO 
-    be_verb = 'are' if n > 1 else 'is'
-    suffix = 's' if n > 1 else ''
-    print("There {} {} matching post{}.".format(be_verb, n, suffix), sep= ' ')
-
-    domain = "1-{}".format(n) if n > 1 else '1'
-    prompt = "Pick post no. ({}) to select: ".format(domain)
-    no = None
     valid = False
     while not valid:
-        no = input(prompt)
-        if no.isdigit(): 
-            no = int(no)
-            if 1 <= no <= n:
-                valid = True
-                no -= 1     # to match zero-index array
-            else:
-                print("error: out of range")
+
+        display(croppedTable, start, limit)
+        if remainingRows > 0:
+            suffix = 's' if remainingRows > 1 else ''
+            n = limit if totalRows > limit else totalRows
+            domain = "1-{}".format(n) if n > 1 else '1'
+            # view more or select
+            prompt = "There are {} more row{} to display.\nPress enter to view more, or pick no. ({}) to select: ".format(remainingRows, suffix, domain)
+            validInput = False
+            while not validInput:
+                i = input(prompt)
+                if i.isdigit():
+                    validInput = True
+                    valid = True
+                    i = int(i)
+                    no = i - 1 
+                elif i in ['y', '']:
+                    #TODO should display 5 more at a time instad of displaying full result
+                    validInput = True
+                    print()
+                    croppedTable = resultTable[limit:]
+                    remainingRows -= limit
+                    start += limit
+                    # TODO get rid of getActionFromFullSearch
+                else:
+                    print("error: invalid command")
+        else:
+            be_verb = 'are' if totalRows > 1 else 'is'
+            suffix = 's' if totalRows > 1 else ''
+            print("There {} {} matching post{}.".format(be_verb, totalRows, suffix), sep= ' ')
+
+            domain = "1-{}".format(totalRows) if totalRows > 1 else '1'
+            prompt = "Pick post no. ({}) to select: ".format(domain)
+            validInput = False
+            while not validInput:
+                no = input(prompt)
+                if no.isdigit(): 
+                    no = int(no)
+                    if 1 <= no <= totalRows:
+                        valid = True
+                        no -= 1     # to match zero-index array
+                        validInput = True
+                    else:
+                        print("error: out of range")
 
     postType = getPostType(resultTable[no])
     action = getAction(postType, isPriv)
@@ -236,7 +233,7 @@ def getAction(postType, isPriv):
     return cmd
 
 
-def display(results, limit=5):
+def display(results, start, limit=5):
 
     rowNameLenDict = {'no.' : 6,
                       'pid' : 7,
@@ -262,7 +259,8 @@ def display(results, limit=5):
         print(lb, sep='\n')
         r = '|'
         d = rowNameLenDict
-        r += str(i+1).center(d['no.'], ' ') + '|'
+        #r += str(i+1).center(d['no.'], ' ') + '|'
+        r += str(start).center(d['no.'], ' ') + '|'
         r += row[0].center(d['pid'], ' ') + '|'
         r += row[1].center(d['pdate'], ' ') + '|'
         r += row[2][:d['Title']-2].rjust(d['Title'], ' ') + '|'
@@ -270,6 +268,7 @@ def display(results, limit=5):
         r += row[4].center(d['poster'], ' ') + '|'
         r += str(row[5]).center(d['# of Votes'], ' ') + '|'
         r += str(row[6]).center(d['# of Answers'], ' ') + '|'
+        start += 1
 
         print(r, sep='\n')
 
@@ -462,7 +461,7 @@ def getPid(curr):
             n = i
             pid = 'p{:03}'.format(n)
             curr.execute("SELECT * FROM posts WHERE pid=?;",(pid, ))
-            if not curr.fetchone():
+            if not curr.fetchone(): # empty data set
                 isUnique = True
             i += 1
     return pid

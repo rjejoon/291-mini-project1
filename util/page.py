@@ -37,9 +37,9 @@ def mainMenu(conn, curr, uid):
             action.postQ(conn, curr, uid)
         elif option == '2':
             resultTable = action.searchPosts(curr)
-        
             initLimit = 5
             no, act = action.displaySearchResult(resultTable, isPriv, initLimit)
+            
             opt = actionOpts[act]
             targetPost = resultTable[no]
             targetUid = resultTable[4]
