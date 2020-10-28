@@ -240,7 +240,7 @@ def getAction(postType, isPriv):
 def display(results, limit=5):
 
     rowNameLenDict = OrderedDict()
-    rowNameLenDict['no'] = 6
+    rowNameLenDict['no.'] = 6
     rowNameLenDict['pid'] = 7 
     rowNameLenDict['pdate'] = 14
     rowNameLenDict['Title'] = 19
