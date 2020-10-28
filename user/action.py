@@ -2,6 +2,7 @@ import sqlite3
 import sys
 import os 
 from datetime import date
+from collections import OrderedDict
 
 
 def postQ(conn, curr, poster):
@@ -238,14 +239,16 @@ def getAction(postType, isPriv):
 
 def display(results, limit=5):
 
-    rowNameLenDict = {'no.' : 6,
-                      'pid' : 7,
-                      'pdate': 14,
-                      'Title': 19,
-                      'Body': 27,
-                      'poster': 9,
-                      '# of Votes': 13,
-                      '# of Answers': 15}
+    rowNameLenDict = OrderedDict()
+    rowNameLenDict['no'] = 6
+    rowNameLenDict['pid'] = 7 
+    rowNameLenDict['pdate'] = 14
+    rowNameLenDict['Title'] = 19
+    rowNameLenDict['Body'] = 27
+    rowNameLenDict['poster'] = 9
+    rowNameLenDict['# of Votes'] = 13
+    rowNameLenDict['# of Answers'] = 15
+
 
     header = '|'
     for rowName in rowNameLenDict.keys():
