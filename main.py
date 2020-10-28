@@ -20,6 +20,7 @@ def main():
     # TODO clear out the terminal whenever user goes to the first screen
     try:
         # first screen
+        os.system('clear')
         run = True
         while run:
             # TODO change interface of the first screen    

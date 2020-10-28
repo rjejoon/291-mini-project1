@@ -431,14 +431,14 @@ def getPInfo(curr):
     '''
     valid = False
     while not valid:
-        pid = getPid(curr)
+        pid = genPid(curr)
         pdate = str(date.today())
         title = input("Enter your title: ")
         body = input("Enter your body: ")
 
         print('\nPlease double check your information: ')
-        print('   title: {}'.format(title))
-        print('   body: {}'.format(body))
+        print('   Title: {}'.format(title))
+        print('   Body: {}'.format(body))
 
         if checkValid():
             valid = True
@@ -448,26 +448,25 @@ def getPInfo(curr):
                 return False 
 
 
-def getPid(curr):
+def genPid(curr):
     '''
-    Generates a new pid and Returns it.
+    Generate and return a new pid.
 
     Input: curr -- sqllite3.Connection
+    Return: pid -- str
     '''
-    pid = None
-    curr.execute('SELECT * FROM posts;')
-    if not curr.fetchone():     # no posts in db
-        pid = 'p001'
-    else:
-        isUnique = False
-        i = 2
-        while not isUnique:
-            n = i
-            pid = 'p{:03}'.format(n)
-            curr.execute("SELECT * FROM posts WHERE pid=?;"(pid, ))
-            if len(curr.fetchone()) == 0:
-                isUnique = True
-            i += 1
+    pid = ''
+    pid_n = getLargestPidNum(curr)
+
+    if not pid_n:     # no posts in db
+        return 'p001'
+
+    isUnique = False
+    while not isUnique:
+        pid = 'p{:03}'.format(pid_n)    # format: 'pxxx'
+        isUnique = isPidUnique(curr, pid)
+        pid_n += 1
+
     return pid
 
 
@@ -493,3 +492,32 @@ def checkValid():
             return True
         elif checkValid == 'n':
             return False
+
+
+def getLargestPidNum(curr):
+    
+    curr.execute('''
+                    SELECT 
+                        substr(pid, 2, 4) as n 
+                    FROM 
+                        posts 
+                    WHERE 
+                        pid LIKE 'p%' 
+                    ORDER BY n DESC;
+                ''')
+    n = curr.fetchone()
+    if n:
+        return int(n[0])
+    return None
+
+
+def isPidUnique(curr, pid):
+
+    curr.execute("SELECT * FROM posts WHERE pid=?;", (pid, ))
+
+    if not curr.fetchone():
+        return True
+    return False
+
+
+
