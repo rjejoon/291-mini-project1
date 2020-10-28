@@ -30,10 +30,10 @@ def main():
                 run = False
             elif uInput in ('si', 'su'):    # TODO checks strings twice. Prob change this to one if..else statement
                 if uInput == 'si':
-                    uid = page.signIn(conn, curr)
+                    uid, name = page.signIn(conn, curr)
                 else:
-                    uid = page.signUp(conn, curr)
-                page.mainMenu(conn, curr, uid)
+                    uid, name = page.signUp(conn, curr)
+                page.mainMenu(conn, curr, uid, name)
             else:
                 print("error: invalid command")
     except:
@@ -55,6 +55,7 @@ def initConnAndCurrFrom(db):
     db_path = dir_path + db 
 
     conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
     curr = conn.cursor()
 
     return conn, curr

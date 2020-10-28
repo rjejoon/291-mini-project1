@@ -6,7 +6,7 @@ from user import action
 from user.privileged import action as privAction # TODO change name 
 
 
-def mainMenu(conn, curr, uid):
+def mainMenu(conn, curr, uid, name):
     '''
     Displays the menu and Prompts the user to choose from some actions.
 
@@ -26,7 +26,7 @@ def mainMenu(conn, curr, uid):
     valid = False
     while not valid:
         # TODO change interface
-        print('\n* * WELCOME {}! * *'.format(uid)) # TODO use nane of the user instead of uid
+        print('\n* * WELCOME {}! * *'.format(name))
         print('\n[ M E N U ]')
         print('\n1. Post a question')
         print('2. Search for posts')
@@ -42,8 +42,8 @@ def mainMenu(conn, curr, uid):
             
             opt = actionOpts[act]
             targetPost = resultTable[no]
-            targetUid = resultTable[4]
-            targetpid = targetPost[0]           # TODO row factory & use col name
+            targetUid = targetPost['poster']
+            targetpid = targetPost['pid']     
 
             if opt == 1:
                 action.castVote(conn, curr, targetpid, uid)
@@ -70,10 +70,12 @@ def mainMenu(conn, curr, uid):
 
 def signIn(conn, curr):
     '''
-    Prompts the user to enter their user ID and password. Checks if they exist in the database and Returns them.
+    Prompts the user to enter their user ID and password. Checks if they exist in the database and Returns the user info.
 
     Inputs: conn, curr
-    Returns: userID, password
+    Returns: 
+        uid
+        userRow['name'] -- name of the user
     '''
 
     # TODO user should be able to go back to the first screen
@@ -86,14 +88,16 @@ def signIn(conn, curr):
         curr.execute('SELECT * FROM users WHERE uid = :userID AND pwd = :password;',
                     {'userID': uid, 'password': pwd})
 
-        if curr.fetchone():
+        userRow = curr.fetchone()
+
+        if userRow:
             validInfo = True
         else:
             print('error: invalid user ID or password. Please try again.')
         
     print('You have successfully signed in.')
 
-    return uid
+    return uid, userRow['name']
 
 
 def signUp(conn, curr):
@@ -127,12 +131,11 @@ def signUp(conn, curr):
 
     print("Sign up successful!")
 
-    curr.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", 
-            [uid, name, pwd, city, crdate])
+    curr.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", (uid, name, pwd, city, crdate))
 
     conn.commit()
 
-    return uid
+    return uid, name
 
 
 def checkSignout():
@@ -201,4 +204,4 @@ def isPrivileged(curr, uid):
 
     curr.execute("SELECT uid FROM privileged where uid = ?", (uid, ))
     
-    return True if len(curr.fetchone()) > 0 else False
+    return True if curr.fetchone() else False
