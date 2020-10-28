@@ -16,6 +16,7 @@ def main():
     '''
     db = getDBFrom(sys.argv)
     conn, curr = initConnAndCurrFrom(db)
+    tempTestData(curr, 'testSchema.sql')
 
     # TODO clear out the terminal whenever user goes to the first screen
     try:
@@ -66,6 +67,12 @@ def getDBFrom(argv):
         sys.exit(1)
     
     return argv[1]
+
+# TODO delete after testing
+def tempTestData(curr, filename):
+    sqlFile = open(filename)
+    sqlString = sqlFile.read()
+    curr.executescript(sqlString)
 
 
 if __name__ == "__main__":

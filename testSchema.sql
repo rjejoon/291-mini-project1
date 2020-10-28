@@ -77,8 +77,9 @@ create table answers (
 insert into users values ('rj', 'Kevin Ryu', 'rjj0220', 'Regina', date('now'));
 insert into users values ('rjej', 'Kevin Ryu', 'rjj0220', 'Regina', date('now'));
 insert into privileged values ('rjej');
-
--- make priv and ordinary user profile
+insert into users values ('moen', 'Moe Numasawa', '12345', 'Edmonton', date('now'));
+insert into users values ('mnmn', 'Moe Ordinary', '12345', 'Edmonton', date('now'));
+insert into privileged values ('moen');
 
 -- test cases for searchPosts()
 -- 1. Ordering works

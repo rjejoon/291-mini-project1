@@ -461,8 +461,8 @@ def getPid(curr):
         while not isUnique:
             n = i
             pid = 'p{:03}'.format(n)
-            curr.execute("SELECT * FROM posts WHERE pid=?;"(pid, ))
-            if len(curr.fetchone()) == 0:
+            curr.execute("SELECT * FROM posts WHERE pid=?;",(pid, ))
+            if not curr.fetchone():
                 isUnique = True
             i += 1
     return pid
