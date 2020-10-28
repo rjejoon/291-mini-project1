@@ -106,3 +106,5 @@ insert into answers values ('p006', 'p001');
 insert into answers values ('p007', 'p001');
 insert into answers values ('p008', 'p001');
 
+insert into badges values ('excellent question','gold');
+insert into badges values ('good question', 'silver');

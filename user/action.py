@@ -433,8 +433,6 @@ def getPInfo(curr):
         body = input("Enter your body: ")
 
         print('\nPlease double check your information: ')
-        # TODO user doesn't need to know about pid
-        print('   pid: {}'.format(pid))
         print('   title: {}'.format(title))
         print('   body: {}'.format(body))
 
@@ -452,6 +450,7 @@ def getPid(curr):
 
     Input: curr -- sqllite3.Connection
     '''
+    # TODO we don't know if the pid format is p001...
     curr.execute('SELECT * FROM posts;')
     if not curr.fetchone():
         pid = 'p001'
