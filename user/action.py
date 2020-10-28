@@ -124,7 +124,7 @@ def castVote(conn, curr, pid, uid):
 
 
 def displaySearchResult(resultTable, isPriv, limit):
-
+    # TODO organize this function
     no = action = None
     totalRows = len(resultTable)
     remainingRows = totalRows - limit
@@ -150,13 +150,11 @@ def displaySearchResult(resultTable, isPriv, limit):
                     i = int(i)
                     no = i - 1 
                 elif i in ['y', '']:
-                    #TODO should display 5 more at a time instad of displaying full result
                     validInput = True
                     print()
                     croppedTable = resultTable[limit:]
                     remainingRows -= limit
                     start += limit
-                    # TODO get rid of getActionFromFullSearch
                 else:
                     print("error: invalid command")
         else:
