@@ -86,6 +86,7 @@ insert into privileged values ('moen');
 insert into posts values ('p001', date('now'), 'What is database?', '6Database, database, database, database', 'rjej');
 insert into questions values ('p001', null);
 insert into tags values ('p001', 'Database');
+insert into tags values ('p001', 'Hello');
 
 insert into posts values ('p002', date('now'), 'What is ?', '5Database, database, database, database', 'rjej');
 insert into questions values ('p002', null);
@@ -108,4 +109,8 @@ insert into questions values ('p006', null);
 
 
 insert into badges values ('excellent question','gold');
-insert into badges values ('good question', 'silver');
+insert into badges values ('great question', 'silver');
+insert into badges values ('excellent answer', 'gold');
+insert into badges values ('great answer', 'silver');
+insert into badges values ('good question', 'bronze');
+insert into badges values ('good answer', 'bronze');

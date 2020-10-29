@@ -26,7 +26,6 @@ def mainMenu(conn, curr, uid, name):
     valid = False
     while not valid:
         # TODO change interface
-        print('\n* * WELCOME {}! * *'.format(name))
         print('\n[ M E N U ]')
         print('\n1. Post a question')
         print('2. Search for posts')
