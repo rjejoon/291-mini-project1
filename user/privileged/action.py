@@ -29,53 +29,72 @@ def markAnswer(conn, curr, aid):
     print("Accepted answer successfully updated!")
             
 
-def giveBadge(conn, curr, poster):
+def giveBadge(conn, curr, uid):
     '''
     Gives a badge to the poster of the selected post
 
     Inputs: 
         conn -- sqlite3.Connection
         curr -- sqllite3.Connection
-        poster -- uid of the selected post (str)
+        uid -- uid of the selected post (str)
     '''
     print('\n< Give Badge >')
-    valid = False
-    # TODO display all of the badges in db
+
     displayBadge(curr)
+
+    valid = False
     while not valid:
+
         bdate = str(date.today())
-        bname = input('\nWhat is the badge name?: ')
+        bname = getValidBadge()
 
-        # checks if bname exists in the database
-        curr.execute('SELECT * FROM badges WHERE bname = ?;',(bname,))
-        if curr.fetchone():
+        # checks if entered bname exists in the database
+        curr.execute('SELECT * FROM badges WHERE bname = ? COLLATE NOCASE;',(bname,))
+        badgeRow = curr.fetchone()
+    
+        if badgeRow:
+            valid = checkValid('Do you want to give badge: "{}" to the poster? (y/n) '.format(badgeRow['bname']))
 
-            valid = checkValid('Do you want to give badge: "{}" to the poster? y/n '.format(bname))
+            # checks if the poster has already received a badge today
+            curr.execute('SELECT * FROM ubadges WHERE uid = ? and bdate = ?;',(uid, bdate))
+            badgeGivenTdy = curr.fetchone()
 
-            if valid:
-                # inserts a new badge
-                curr.execute('INSERT INTO ubadges VALUES (?, ?, ?)',(poster, bdate, bname))
-                conn.commit()
-                print('You gave badge: "{}"!'.format(bname))
+            if not badgeGivenTdy: 
+                if valid:
+                    # inserts a new badge
+                    curr.execute('INSERT INTO ubadges VALUES (?, ?, ?)',(uid, bdate, badgeRow['bname']))
+                    conn.commit()
+                    print('Badge awarded to the poster!')
+            else:
+                print("\nSorry! This poster has already received a badge today.")
 
         else:
-            print('Sorry! badge name: "{}" does not exist.'.format(bname))
+            print('\nSorry! badge: "{}" is not available.'.format(bname))
 
         if not valid:
-            valid = not checkValid('Do you still want to give a badge? y/n ')
+            valid = not checkValid('Do you still want to give a badge? (y/n) ')
 
 
 def displayBadge(curr):
-    print('Available badges:')
+    print('\nAvailable badges:')
     curr.execute("SELECT type, bname FROM badges ORDER BY type;")
 
     frame = '+'+'-'*10+'+'+'-'*25+'+'
     print(frame)
-    print('|{:^10}|{:^25}|'.format('Type','Badge Name'))
+    print('|{:^10}|{:^25}|'.format('< type >','< badge name >'))
     print(frame)
     for aBadge in curr.fetchall():
         print('|{:^10}|{:^25}|'.format(aBadge['type'],aBadge['bname']))
         print(frame)
+
+
+def getValidBadge():
+    validBadge = False
+    while not validBadge:
+        bname = input('\nSelect a badge name to give from the list above: ')
+        if bname != '':
+            validBadge = True
+    return bname
 
 
 def addTag(conn, curr, pid):
