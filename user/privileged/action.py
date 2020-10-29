@@ -91,7 +91,7 @@ def displayBadge(curr):
 def getValidBadge():
     validBadge = False
     while not validBadge:
-        bname = input('\nSelect a badge name to give from the list above: ')
+        bname = input('\nEnter a badge name to give from the list above: ')
         if bname != '':
             validBadge = True
     return bname
@@ -109,8 +109,11 @@ def addTag(conn, curr, pid):
     print('\n< Add Tags >')
 
     currentTags = findCurrentTag(curr, pid)
-    csuffix = genSuffix(currentTags)
-    print("\nCurrent Tag{}: {}".format(csuffix, ', '.join(currentTags)))
+    if len(currentTags) == 0:
+        print('\nThere is no tag on this post yet.')
+    else:
+        csuffix = genSuffix(currentTags)
+        print("\nCurrent Tag{}: {}".format(csuffix, ', '.join(currentTags)))
 
     valid = False
     while not valid:
