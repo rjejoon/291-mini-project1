@@ -1,8 +1,11 @@
 import sqlite3
 import sys
 import os 
+
 from datetime import date
 from collections import OrderedDict
+from util import page
+from util import bcolor
 
 
 def postQ(conn, curr, poster):
@@ -14,41 +17,22 @@ def postQ(conn, curr, poster):
         curr -- sqllite3.Connection
         poster -- uid of the current user (str)
     '''
-    print('\n< Post Question >')
+    print('\n' + bcolor.pink('< Post Question >'))
     infoList = getPInfo(curr)
     if infoList:
         infoList.append(poster) # infoList = [pid, pdate, title, body, poster]
 
-        curr.execute('INSERT INTO posts VALUES (?, ?, ?, ?, ?)', infoList)
-
-        curr.execute('INSERT INTO questions VALUES (?, NULL)', [infoList[0]])
-
+        curr.execute('INSERT INTO posts VALUES (?, ?, ?, ?, ?);', infoList)
+        curr.execute('INSERT INTO questions VALUES (?, NULL);', [infoList[0]])
         conn.commit()
 
-        print('Posting Completed!')
+        print('Posting Complete!')
 
 
 def searchPosts(curr):
 
-    # TODO interface
-    prompt = "Enter keywords to search, each separated by a comma: "
-    # TODO add error checking
-
-    keywords = input(prompt).lower().replace("'", "''").split(',')
-    keywords = list(map(lambda kw : kw.strip(), keywords))
-    keywords = {'kw{}'.format(i) : kw for i, kw in enumerate(keywords)}
-        
+    keywords = getKeywords(curr)
     fullSearchQuery = genSearchResult(keywords)
-
-    # write full query for checking
-    dir_path = os.path.abspath(os.path.dirname(__file__)) + os.sep + 'test'
-    if not os.path.isdir(dir_path):
-        os.mkdir(dir_path)
-    testf_path = dir_path + os.sep + 'generatedSearchQuery.sql' 
-
-    with open(testf_path, 'w') as f:
-        f.write(fullSearchQuery)
-
     curr.execute(fullSearchQuery, keywords)
     resultTable = curr.fetchall()
 
@@ -91,7 +75,7 @@ def castVote(conn, curr, pid, uid):
         pid -- selected post (str)
         uid -- uid of the current user (str)
     '''
-    print('\n< Cast Vote >')
+    print('\n' + bcolor.pink('< Cast Vote >'))
     valid = False
     while not valid:
         confirm = input('Confirmation: Do you want to vote for this post? y/n ').lower()
@@ -100,12 +84,12 @@ def castVote(conn, curr, pid, uid):
             # checks if the user has already voted for the selected post
             curr.execute('SELECT * FROM votes WHERE pid = ? and uid = ?',[pid, uid])
             if curr.fetchone():
-                print("You've already voted for this post.")
-
+                print(bcolor.errmsg("error: you've already voted for this post."))
             else:
                 curr.execute('SELECT * FROM votes;')
                 vdate = str(date.today())
 
+                #TODO make a function
                 if not curr.fetchone():
                     vno = 1
                 else:
@@ -124,66 +108,40 @@ def castVote(conn, curr, pid, uid):
             valid = True
 
 
-def displaySearchResult(resultTable, isPriv, limit):
+def displaySearchResult(resultTable, isPriv):
 
-    display(resultTable, limit)
+    currRowIndex = 0
+    numRows = len(resultTable)
+    no = action = domain = None
+    validEntries = [] 
+    choseAction = False
+    while not choseAction and currRowIndex < numRows:
+        currRowIndex = display(resultTable, currRowIndex)
+        remainingRows = numRows - currRowIndex
 
-    no = action = None
-    remainingRows = len(resultTable) - limit
-    if remainingRows > 0:
-        suffix = 's' if remainingRows > 1 else ''
-        n = limit if len(resultTable) > limit else len(resultTable)
-        domain = "1-{}".format(n) if n > 1 else '1'
-        prompt = "There are {} more row{} to display.\nPress enter to view more, or pick no. ({}) to select: ".format(remainingRows, suffix, domain)
+        if remainingRows > 0:
+            suffix = 's' if remainingRows > 1 else ''
+            domain = "1-{}".format(currRowIndex) if currRowIndex > 1 else '1'
+            print("There are {} more row{} to display.\n".format(remainingRows, suffix))
+            prompt = "Press enter to view more, or pick no. [{}] to select: ".format(domain)
+            validEntries += ['y', '']
+        else:
+            domain = "1-{}".format(currRowIndex) if currRowIndex > 1 else '1'
+            prompt = "Search hit bottom. Pick no. [{}] to select: ".format(domain)
 
-        valid = False
-        while not valid:
-            print()
-            i = input(prompt)
-            if i.isdigit():
-                valid = True
-                i = int(i)
-                no = i - 1      # to match zero-index array
-                postType = getPostType(resultTable[no])
-                action = getAction(postType, isPriv)
-            elif i in ['y', '']:
-                #TODO should display 5 more at a time instad of displaying full result
-                valid = True
-                print()
-                display(resultTable, limit=len(resultTable))
-                # TODO get rid of getActionFromFullSearch
-                no, action = getActionFromFullSearch(len(resultTable), resultTable, isPriv)
-            else:
-                print("error: invalid command")
+        if len(domain) == 1:
+            validEntries.append('1')
+        else:
+            end = domain.split('-')[1]
+            validEntries += list(map(str, range(1, int(end)+1)))  
 
-    # TODO if len(remainingRows) < 0: no, action are None
+        opt = page.getValidInput(prompt, validEntries) 
 
-    return no, action
-
-
-def getActionFromFullSearch(n, resultTable, isPriv):
-
-    # TODO 
-    be_verb = 'are' if n > 1 else 'is'
-    suffix = 's' if n > 1 else ''
-    print("There {} {} matching post{}.".format(be_verb, n, suffix), sep= ' ')
-
-    domain = "1-{}".format(n) if n > 1 else '1'
-    prompt = "Pick post no. ({}) to select: ".format(domain)
-    no = None
-    valid = False
-    while not valid:
-        no = input(prompt)
-        if no.isdigit(): 
-            no = int(no)
-            if 1 <= no <= n:
-                valid = True
-                no -= 1     # to match zero-index array
-            else:
-                print("error: out of range")
-
-    postType = getPostType(resultTable[no])
-    action = getAction(postType, isPriv)
+        if opt.isdigit():
+            no = int(opt) - 1      # to match zero-index array
+            postType = getPostType(resultTable[no])
+            action = getAction(postType, isPriv)
+            choseAction = True
 
     return no, action
 
@@ -196,23 +154,34 @@ def getPostType(resultRow):
     return 'q' if isinstance(resultRow[6], int) else 'a'
 
 
+def getKeywords(curr):
+
+    os.system('clear')
+    print(bcolor.pink('< Search Posts >'))
+    prompt = "Enter keywords to search, each separated by a comma: "
+    keywords = input(prompt).lower().replace("'", "''").split(',')
+    keywords = list(map(lambda kw : kw.strip(), keywords))
+    keywords = {'kw{}'.format(i) : kw for i, kw in enumerate(keywords)}
+
+    return keywords
+
+
 def getAction(postType, isPriv):
 
-    '''
-    actions: 
-        1: Vote
-        2: Post answer
-    '''
-    options = {'vp': "Vote on the post"}
-    quesOption = {'wa': "Write an answer"}
+    options = OrderedDict()
+    options['vp'] = '{}ote {}ost'.format(bcolor.u_ualphas[21], bcolor.u_lalphas[15])
 
-    privOptions = {
-                    'gb': "Give a badge",
-                    't': "Add a tag",
-                    'ep': "Edit the post"
-                    }
+    quesOption = OrderedDict()
+    quesOption['wa'] = '{}rite an {}nswer'.format(bcolor.u_ualphas[22], bcolor.u_lalphas[0])
 
-    privAnsOption = {'ma': "Mark as accepted"}
+    privOptions = OrderedDict()
+    privOptions['gb'] = '{}ive a {}adge'.format(bcolor.u_ualphas[6], bcolor.u_lalphas[1])
+    privOptions['t'] = '{}dd a {}ag'.format(bcolor.u_ualphas[0], bcolor.u_lalphas[19])
+    privOptions['ep'] = '{}dit {}ost'.format(bcolor.u_ualphas[4], bcolor.u_lalphas[15])
+
+    privAnsOption = OrderedDict()
+    privAnsOption['ma'] = '{}ark as {}ccepted'.format(bcolor.u_ualphas[12], bcolor.u_lalphas[0])
+
 
     if postType == 'q':
         options.update(quesOption)
@@ -223,21 +192,15 @@ def getAction(postType, isPriv):
         
     print("Choose an option to:\n")
     for cmd, option in options.items():
-        print("   {0}. {1}".format(cmd, option))
+        print("   {0}: {1}".format(bcolor.bold(cmd), option))
     print()
 
-    valid = False
-    while not valid:
-        cmd = input("Enter a command... ")
-        if cmd in options.keys():
-            valid = True
-        else:
-            print("error: invalid command")
+    cmd = page.getValidInput('Enter a command: ', options.keys())
     
     return cmd
 
 
-def display(results, limit=5):
+def display(result, currRowIndex):
 
     rowNameLenDict = OrderedDict()
     rowNameLenDict['no.'] = 6
@@ -249,7 +212,6 @@ def display(results, limit=5):
     rowNameLenDict['# of Votes'] = 13
     rowNameLenDict['# of Answers'] = 15
 
-
     header = '|'
     for rowName in rowNameLenDict.keys():
         header += rowName.center(rowNameLenDict[rowName], ' ') + '|'
@@ -259,9 +221,16 @@ def display(results, limit=5):
     
     print(lb, header, sep='\n')
 
-    for i, row in enumerate(results):
-        if i >= limit:
-            break
+    lim = 5
+    i = currRowIndex
+    n = len(result)
+    for i in range(currRowIndex, currRowIndex+5):
+
+        if currRowIndex >= n:
+            print(lb)
+            return currRowIndex
+
+        row = result[currRowIndex]
         print(lb, sep='\n')
         r = '|'
         d = rowNameLenDict
@@ -275,13 +244,15 @@ def display(results, limit=5):
         r += str(row[6]).center(d['# of Answers'], ' ') + '|'
 
         print(r, sep='\n')
-
+        i += 1
+        currRowIndex += 1
     print(lb)
         
+    return currRowIndex
 
 def genSearchResult(keywords):
 
-    matchingPostsQuery = '\nUnion all\n'.join([getMatchingPostsQuery(i) for i in range(len(keywords))])
+    matchingPostsQuery = '\nUNION ALL\n'.join([getMatchingPostsQuery(i) for i in range(len(keywords))])
     mergedTableQuery = mergeMatchingTables(matchingPostsQuery)
     numVotesTableQuery = getnumVotesTable()
     numAnsTableQuery = getnumAnsTable()
@@ -318,6 +289,15 @@ def genSearchResult(keywords):
                     ORDER BY search.numMatches DESC;
                     '''.format(searchQuery)
 
+    # write full query for debuging 
+    dir_path = os.path.abspath(os.path.dirname(__file__)) + os.sep + 'test'
+    if not os.path.isdir(dir_path):
+        os.mkdir(dir_path)
+    testf_path = dir_path + os.sep + 'searchQuery.sql' 
+
+    with open(testf_path, 'w') as f:
+        f.write(fullSearchQuery)
+
     return fullSearchQuery
                     
 
@@ -353,11 +333,12 @@ def getMatchingPostsQuery(i):
                         SELECT
                             pid,
                             count(tag) as numTagMatches 
-                        from 
+                        FROM 
                             tags t
-                        where
+                        WHERE
                             tag like '%'||:kw{0}||'%'
-                        group by pid
+                        GROUP BY 
+                            pid
                     '''.format(i)
 
     matchingPostsQuery = '''
@@ -366,23 +347,27 @@ def getMatchingPostsQuery(i):
                         ifnull(numTitleBodyMatches, 0) as numTitleBodyMatches,
                         ifnull(numTagMatches, 0) as numTagMatches
                     FROM 
-                        (SELECT pid, numTitleBodyMatches, numTagMatches
-
+                        (SELECT 
+                            pid, 
+                            numTitleBodyMatches, 
+                            numTagMatches
                         FROM
                             ({0}) 
-                                left outer join 
+                        LEFT OUTER JOIN 
                             ({1}) 
-                                using (pid) 
+                        USING (pid) 
 
-                        union
+                        UNION
 
-                        SELECT pid, numTitleBodyMatches, numTagMatches
-
+                        SELECT 
+                            pid, 
+                            numTitleBodyMatches, 
+                            numTagMatches
                         FROM
                             ({1})
-                                left outer join
+                        LEFT OUTER JOIN
                             ({0})
-                                using (pid)
+                        USING (pid)
                         )
                     '''.format(matchingTitleBodyTable, matchingTagTable)
 
@@ -393,34 +378,32 @@ def getMatchingPostsQuery(i):
 
 def getnumVotesTable():
 
-    numVotesTable = '''
-                        SELECT
-                            pid,
-                            count(vno) as numVotes
-                        FROM 
-                            votes v
-                        GROUP BY pid
-                    '''
-    return numVotesTable
+    return  '''
+                SELECT
+                    pid,
+                    count(vno) as numVotes
+                FROM 
+                    votes v
+                GROUP BY 
+                    pid
+            '''
 
 
 def getnumAnsTable():
 
-    numAnsTable = '''
-                    SELECT
-                        q.pid as qid,
-                        ifnull(count(a.pid), 0) as numAns
-                    FROM questions q LEFT OUTER JOIN answers a ON q.pid=qid
-                    GROUP BY q.pid
-                '''
-
-    return numAnsTable
-
-
-if __name__ == '__main__':
-    conn = sqlite3.connect(sys.argv[1])
-    curr = conn.cursor()
-    searchPosts(curr)
+    return '''
+            SELECT
+                q.pid as qid,
+                ifnull(count(a.pid), 0) as numAns
+            FROM 
+                questions q 
+            LEFT OUTER JOIN 
+                answers a 
+            ON 
+                q.pid=qid
+            GROUP BY 
+                q.pid
+            '''
 
 
 def getPInfo(curr):
@@ -521,3 +504,9 @@ def isPidUnique(curr, pid):
 
 
 
+
+
+if __name__ == '__main__':
+    conn = sqlite3.connect(sys.argv[1])
+    curr = conn.cursor()
+    searchPosts(curr)

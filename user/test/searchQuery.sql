@@ -1,23 +1,23 @@
  
-SELECT
-    p.pid,
-    pdate,
-    title,
-    body,
-    poster,
-    numVotes,
-    numAns,
-    numMatches
-FROM 
-    posts p,
-    (
-    SELECT 
-        pid, 
-        numMatches,
-        ifnull(numVotes, 0) as numVotes,
-        numAns
-    FROM
-        (
+                    SELECT
+                        p.pid,
+                        pdate,
+                        title,
+                        body,
+                        poster,
+                        numVotes,
+                        numAns,
+                        numMatches
+                    FROM 
+                        posts p,
+                        (
+                        SELECT 
+                            pid, 
+                            numMatches,
+                            ifnull(numVotes, 0) as numVotes,
+                            numAns
+                        FROM
+                            (
             SELECT 
                 pid, 
                 sum(numTitleBodyMatches) + sum(numTagMatches) as numMatches
@@ -28,8 +28,10 @@ FROM
                         ifnull(numTitleBodyMatches, 0) as numTitleBodyMatches,
                         ifnull(numTagMatches, 0) as numTagMatches
                     FROM 
-                        (SELECT pid, numTitleBodyMatches, numTagMatches
-
+                        (SELECT 
+                            pid, 
+                            numTitleBodyMatches, 
+                            numTagMatches
                         FROM
                             (
                             SELECT 
@@ -42,35 +44,39 @@ FROM
                                 p.title LIKE '%'||:kw0||'%'
                                 OR p.body LIKE '%'||:kw0||'%'
                             ) 
-                                left outer join 
+                        LEFT OUTER JOIN 
                             (
                         SELECT
                             pid,
                             count(tag) as numTagMatches 
-                        from 
+                        FROM 
                             tags t
-                        where
+                        WHERE
                             tag like '%'||:kw0||'%'
-                        group by pid
+                        GROUP BY 
+                            pid
                     ) 
-                                using (pid) 
+                        USING (pid) 
 
-                        union
+                        UNION
 
-                        SELECT pid, numTitleBodyMatches, numTagMatches
-
+                        SELECT 
+                            pid, 
+                            numTitleBodyMatches, 
+                            numTagMatches
                         FROM
                             (
                         SELECT
                             pid,
                             count(tag) as numTagMatches 
-                        from 
+                        FROM 
                             tags t
-                        where
+                        WHERE
                             tag like '%'||:kw0||'%'
-                        group by pid
+                        GROUP BY 
+                            pid
                     )
-                                left outer join
+                        LEFT OUTER JOIN
                             (
                             SELECT 
                                 pid,
@@ -82,25 +88,32 @@ FROM
                                 p.title LIKE '%'||:kw0||'%'
                                 OR p.body LIKE '%'||:kw0||'%'
                             )
-                                using (pid)
+                        USING (pid)
                         )
                     )
             GROUP BY pid
             ) left outer join (
-                        SELECT
-                            pid,
-                            count(vno) as numVotes
-                        FROM 
-                            votes v
-                        GROUP BY pid
-                    ) using (pid) 
+                SELECT
+                    pid,
+                    count(vno) as numVotes
+                FROM 
+                    votes v
+                GROUP BY 
+                    pid
+            ) using (pid) 
                                 left outer join (
-                    SELECT
-                        q.pid as qid,
-                        ifnull(count(a.pid), 0) as numAns
-                    FROM questions q LEFT OUTER JOIN answers a ON q.pid=qid
-                    GROUP BY q.pid
-                ) on pid = qid
+            SELECT
+                q.pid as qid,
+                ifnull(count(a.pid), 0) as numAns
+            FROM 
+                questions q 
+            LEFT OUTER JOIN 
+                answers a 
+            ON 
+                q.pid=qid
+            GROUP BY 
+                q.pid
+            ) on pid = qid
 
                      ) as search
                     WHERE
