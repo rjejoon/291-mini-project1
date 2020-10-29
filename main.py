@@ -6,7 +6,7 @@ import traceback
 from util import page
 
 
-def main():
+def main(argv):
     '''
     The main loop of the program.
 
@@ -14,32 +14,34 @@ def main():
         0: Success
         1: invalid command line argument
     '''
-    db = getDBFrom(sys.argv)
+    db = getDBFrom(argv)
     conn, curr = initConnAndCurrFrom(db)
 
-    # TODO clear out the terminal whenever user goes to the first screen
     try:
-        # first screen
-        os.system('clear')
         run = True
         while run:
-            # TODO change interface of the first screen    
-            uInput = input("\nOptions: (si) sign in, (su) sign up, (q)uit: ").lower()
+            os.system('clear')
+            page.printFirstScreen() 
 
-            if uInput == 'q':
-                run = False
-            elif uInput in ('si', 'su'):    # TODO checks strings twice. Prob change this to one if..else statement
-                if uInput == 'si':
-                    uid = page.signIn(conn, curr)
-                else:
-                    uid = page.signUp(conn, curr)
+            validEntries = ['si', 'su', 'q']
+            prompt = "Choose one of the following options... "
+            opt = getValidInput(prompt, validEntries)
+            if opt == 'si':
+                uid = page.signIn(conn, curr)
                 page.mainMenu(conn, curr, uid)
+            elif opt == 'su':
+                uid = page.signUp(conn, curr)
             else:
-                print("error: invalid command")
-    except:
+                run = False
+        sys.exit(0)
+
+    except SystemExit as e:
+        if int(str(e)) > 0:
+            print(traceback.format_exc())   # TODO change to simple error messeage
+    except Exception as e:
         print(traceback.format_exc())
     finally:
-        print("Closing connection...")
+        print("\nClosing connection...")
         conn.commit()
         conn.close()
 
@@ -69,6 +71,15 @@ def getDBFrom(argv):
     return argv[1]
 
 
+def getValidInput(prompt, validEntries):
+
+    while True:
+        i = input(prompt).lower()
+        if i in validEntries:
+            return i 
+        print("error: invalid command\n")
+
+
 if __name__ == "__main__":
 
-    main()
+    main(sys.argv)

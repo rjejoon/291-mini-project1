@@ -78,9 +78,30 @@ insert into users values ('rj', 'Kevin Ryu', 'rjj0220', 'Regina', date('now'));
 insert into users values ('rjej', 'Kevin Ryu', 'rjj0220', 'Regina', date('now'));
 insert into privileged values ('rjej');
 
--- make priv and ordinary user profile
 
--- test cases for searchPosts()
+-- ==========================Test cases for postQ()================================
+-- 1. unique pid is assigned
+insert into posts values ('s001', date('now'), 'What is a question?', '5question, questions, question, question', 'rjej');
+insert into questions values ('s001', null);
+
+insert into posts values ('abcd', date('now'), 'What is a question?', '5question, questions, question, question', 'rjej');
+insert into questions values ('abcd', null);
+
+insert into posts values ('efgh', date('now'), 'What is a question?', '5question, questions, question, question', 'rjej');
+insert into questions values ('efgh', null);
+
+insert into posts values ('ijkl', date('now'), 'What is a question?', '5question, questions, question, question', 'rjej');
+insert into questions values ('ijkl', null);
+
+insert into posts values ('zzzz', date('now'), 'What is a question?', '5question, questions, question, question', 'rjej');
+insert into questions values ('zzzz', null);
+
+
+
+
+
+
+-- ==========================Test cases for searchPosts()================================
 -- 1. Ordering works
 insert into posts values ('p001', date('now'), 'What is database?', '6Database, database, database, database', 'rjej');
 insert into questions values ('p001', null);

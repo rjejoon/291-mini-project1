@@ -77,8 +77,11 @@ def signIn(conn, curr):
     '''
 
     # TODO user should be able to go back to the first screen
+    i = 0
     validInfo = False
     while not validInfo:
+
+        if i % 3 == 0:
 
         uid = input('\nEnter your user ID: ')
         pwd = getpass.getpass('Enter your password: ')
@@ -133,6 +136,20 @@ def signUp(conn, curr):
     conn.commit()
 
     return uid
+
+def printFirstScreen():
+    '''
+    Displays the UI of the first screen of the program.
+    '''
+    print()
+    print('Menu:')
+    print()
+    print('   si: Sign In')
+    print('   su: Sign Up')
+    print('   q: Quit')
+    print()
+
+
 
 
 def checkSignout():
