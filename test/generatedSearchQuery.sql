@@ -1,23 +1,23 @@
  
-                    SELECT
-                        p.pid,
-                        pdate,
-                        title,
-                        body,
-                        poster,
-                        numVotes,
-                        numAns,
-                        numMatches
-                    FROM 
-                        posts p,
-                        (
-                        SELECT 
-                            pid, 
-                            numMatches,
-                            ifnull(numVotes, 0) as numVotes,
-                            numAns
-                        FROM
-                            (
+SELECT
+    p.pid,
+    pdate,
+    title,
+    body,
+    poster,
+    numVotes,
+    numAns,
+    numMatches
+FROM 
+    posts p,
+    (
+    SELECT 
+        pid, 
+        numMatches,
+        ifnull(numVotes, 0) as numVotes,
+        numAns
+    FROM
+        (
             SELECT 
                 pid, 
                 sum(numTitleBodyMatches) + sum(numTagMatches) as numMatches

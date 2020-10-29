@@ -1,4 +1,5 @@
 import sys
+import os 
 import getpass
 
 from datetime import date
@@ -17,55 +18,53 @@ def mainMenu(conn, curr, uid):
         uid -- uid of the current user
     '''
     isPriv = isPrivileged(curr, uid)
-    actionOpts = {'vp': 1,
-                  'wa': 2,
-                  'ma': 3,
-                  'gb': 4,
-                  't': 5,
-                  'ep': 6,
-                  }
+    actionOpts = {
+                    'vp': 1,
+                    'wa': 2,
+                    'ma': 3,
+                    'gb': 4,
+                    't': 5,
+                    'ep': 6
+                            }
+
     valid = False
     while not valid:
         # TODO change interface
-        print('\n* * WELCOME {}! * *'.format(uid)) # TODO use nane of the user instead of uid
-        print('\n[ M E N U ]')
-        print('\n1. Post a question')
-        print('2. Search for posts')
-        print('3. Sign out')
-        print('4. Quit')
-        option = input('\nChoose from 1-4: ')
-        if option == '1':
+        name = getName(curr, uid)
+        printMainPage(name, isPriv)
+        option = getValidInput('Enter a command: ', ['pq', 'sp', 'so', 'q']) 
+        if option == 'pq':
             action.postQ(conn, curr, uid)
-        elif option == '2':
+        elif option == 'sp':
             resultTable = action.searchPosts(curr)
-        
-            initLimit = 5
-            no, act = action.displaySearchResult(resultTable, isPriv, initLimit)
+            no, act = action.displaySearchResult(resultTable, isPriv)
             opt = actionOpts[act]
             targetPost = resultTable[no]
-            targetUid = resultTable[4]
-            targetpid = targetPost[0]           # TODO row factory & use col name
+            targetUid = targetPost[4]
+            targetPid = targetPost[0]           # TODO row factory & use col name
 
             if opt == 1:
-                action.castVote(conn, curr, targetpid, uid)
+                action.castVote(conn, curr, targetPid, uid)
             elif opt == 2:
-                action.postAns(conn, curr, uid, targetpid)
+                action.postAns(conn, curr, uid, targetPid)
             elif opt == 3:
-                privAction.markAnswer(conn, curr, targetpid)
+                privAction.markAnswer(conn, curr, targetPid)
             elif opt == 4:
                 privAction.giveBadge(conn, curr, targetUid)
             elif opt == 5:
-                privAction.addTag(conn, curr, targetpid)
+                privAction.addTag(conn, curr, targetPid)
             elif opt == 6:
-                privAction.edit(conn, curr, targetpid)
+                privAction.edit(conn, curr, targetPid)
             
-        elif option == '3':
+        elif option == 'so':
             if checkSignout():
                 print('...')
                 print('You have been signed out.')
                 valid = True
 
-        elif option == '4':
+        elif option == 'q':
+            print('...')
+            print('You have been signed out.')
             sys.exit(0)
 
 
@@ -143,20 +142,15 @@ def printFirstScreen():
     '''
     Displays the UI of the first screen of the program.
     '''
-    u_S = bcolor.UNDERLINE + 'S' + bcolor.ENDC
-    u_I = bcolor.UNDERLINE + 'I' + bcolor.ENDC
-    u_U = bcolor.UNDERLINE + 'U' + bcolor.ENDC
-    u_Q = bcolor.UNDERLINE + 'Q' + bcolor.ENDC
 
+    os.system('clear')
     print()
-    print('Menu:')
+    print(bcolor.pink('Menu:'))
     print()
-    print('   si: {}ign {}n'.format(u_S, u_I))
-    print('   su: {}ign {}p'.format(u_S, u_U))
-    print('   q: {}uit'.format(u_Q))
+    print('   {}: {}ign {}n'.format(bcolor.bold('si'), bcolor.u_ualphas[18], bcolor.u_ualphas[8]))
+    print('   {}: {}ign {}p'.format(bcolor.bold('su'), bcolor.u_ualphas[18], bcolor.u_ualphas[20]))
+    print('   {}: {}uit'.format(bcolor.bold('q'), bcolor.u_ualphas[16]))
     print()
-
-
 
 
 def checkSignout():
@@ -224,5 +218,38 @@ def checkValid():
 def isPrivileged(curr, uid):
 
     curr.execute("SELECT uid FROM privileged where uid = ?", (uid, ))
-    
-    return True if len(curr.fetchone()) > 0 else False
+    if not curr.fetchone():
+        return False
+    return True
+
+
+def getValidInput(prompt, validEntries):
+
+    while True:
+        i = input(prompt).lower()
+        if i in validEntries:
+            return i 
+        print(bcolor.errmsg("error: invalid command\n"))
+
+def getName(curr, uid):
+
+    curr.execute("SELECT name FROM users WHERE uid=?;", (uid,))
+    return curr.fetchone()[0]
+
+
+def printMainPage(name, isPriv):
+
+    u_O = bcolor.u_ualphas[14]
+    u_P = bcolor.u_ualphas[15]
+    u_Q = bcolor.u_ualphas[16]
+    u_S = bcolor.u_ualphas[18]
+
+    userType = bcolor.cyan('privileged') if isPriv else ''
+
+    print('\n* * WELCOME {}! * * {}'.format(name, userType)) 
+    print('\n' + bcolor.pink('[ M E N U ]') + '\n')
+    print('   {}: {}ost a {}uestion'.format(bcolor.bold('pq'), u_P, u_Q))
+    print('   {}: {}earch for {}osts'.format(bcolor.bold('sp'), u_S, u_P))
+    print('   {}: {}ign {}ut'.format(bcolor.bold('so'), u_S, u_O))
+    print('   {}:  {}uit'.format(bcolor.bold('q'), u_Q))
+    print()

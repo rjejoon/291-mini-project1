@@ -21,14 +21,13 @@ def main(argv):
     try:
         run = True
         while run:
-            os.system('clear')
             page.printFirstScreen() 
 
-            validEntries = ['si', 'su', 'q']
             prompt = "Enter a command: "
-            opt = getValidInput(prompt, validEntries)
+            opt = page.getValidInput(prompt, ['si', 'su', 'q'])
             if opt == 'si':
                 uid = page.signIn(conn, curr)
+                os.system('clear')
                 page.mainMenu(conn, curr, uid)
             elif opt == 'su':
                 uid = page.signUp(conn, curr)
@@ -72,13 +71,6 @@ def getDBFrom(argv):
     return argv[1]
 
 
-def getValidInput(prompt, validEntries):
-
-    while True:
-        i = input(prompt).lower()
-        if i in validEntries:
-            return i 
-        print(bcolor.FAIL + "error: invalid command\n" + bcolor.ENDC)
 
 
 if __name__ == "__main__":
