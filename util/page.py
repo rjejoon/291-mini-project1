@@ -224,5 +224,6 @@ def checkValid():
 def isPrivileged(curr, uid):
 
     curr.execute("SELECT uid FROM privileged where uid = ?", (uid, ))
-    
-    return True if len(curr.fetchone()) > 0 else False
+    if not curr.fetchone():
+        return False
+    return True
