@@ -141,6 +141,7 @@ def displaySearchResult(resultTable, isPriv, limit):
             domain = "1-{}".format(n) if n > 1 else '1'
             # view more or select
             prompt = "There are {} more row{} to display.\nPress enter to view more, or pick no. ({}) to select: ".format(remainingRows, suffix, domain)
+            
             validInput = False
             while not validInput:
                 i = input(prompt)
@@ -157,6 +158,7 @@ def displaySearchResult(resultTable, isPriv, limit):
                     start += limit
                 else:
                     print("error: invalid command")
+
         else:
             be_verb = 'are' if totalRows > 1 else 'is'
             suffix = 's' if totalRows > 1 else ''
@@ -182,12 +184,10 @@ def displaySearchResult(resultTable, isPriv, limit):
     return no, action
 
 
+
 def getPostType(resultRow):
-
     # resultRow = (pid, pdate, title, body, poster, numVotes, numAns, numMatches)
-
-    # TODO could use row factory to use name of the col instead index.
-    return 'q' if isinstance(resultRow[6], int) else 'a'
+    return 'q' if isinstance(resultRow['numAns'], int) else 'a'
 
 
 def getAction(postType, isPriv):
