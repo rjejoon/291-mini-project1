@@ -3,6 +3,7 @@ import os
 import sys
 import traceback
 
+from util import bcolor
 from util import page
 
 
@@ -12,7 +13,7 @@ def main(argv):
 
     Error codes:
         0: Success
-        1: invalid command line argument
+        2: invalid command line argument
     '''
     db = getDBFrom(argv)
     conn, curr = initConnAndCurrFrom(db)
@@ -24,7 +25,7 @@ def main(argv):
             page.printFirstScreen() 
 
             validEntries = ['si', 'su', 'q']
-            prompt = "Choose one of the following options... "
+            prompt = "Enter a command: "
             opt = getValidInput(prompt, validEntries)
             if opt == 'si':
                 uid = page.signIn(conn, curr)
@@ -66,7 +67,7 @@ def getDBFrom(argv):
 
     if len(argv) != 2:
         print("Usage: python3 main.py [file]") 
-        sys.exit(1)
+        sys.exit(2)
     
     return argv[1]
 
@@ -77,7 +78,7 @@ def getValidInput(prompt, validEntries):
         i = input(prompt).lower()
         if i in validEntries:
             return i 
-        print("error: invalid command\n")
+        print(bcolor.FAIL + "error: invalid command\n" + bcolor.ENDC)
 
 
 if __name__ == "__main__":

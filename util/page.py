@@ -2,6 +2,7 @@ import sys
 import getpass
 
 from datetime import date
+from util import bcolor
 from user import action
 from user.privileged import action as privAction # TODO change name 
 
@@ -82,6 +83,7 @@ def signIn(conn, curr):
     while not validInfo:
 
         if i % 3 == 0:
+            pass
 
         uid = input('\nEnter your user ID: ')
         pwd = getpass.getpass('Enter your password: ')
@@ -141,12 +143,17 @@ def printFirstScreen():
     '''
     Displays the UI of the first screen of the program.
     '''
+    u_S = bcolor.UNDERLINE + 'S' + bcolor.ENDC
+    u_I = bcolor.UNDERLINE + 'I' + bcolor.ENDC
+    u_U = bcolor.UNDERLINE + 'U' + bcolor.ENDC
+    u_Q = bcolor.UNDERLINE + 'Q' + bcolor.ENDC
+
     print()
     print('Menu:')
     print()
-    print('   si: Sign In')
-    print('   su: Sign Up')
-    print('   q: Quit')
+    print('   si: {}ign {}n'.format(u_S, u_I))
+    print('   su: {}ign {}p'.format(u_S, u_U))
+    print('   q: {}uit'.format(u_Q))
     print()
 
 
