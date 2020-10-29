@@ -38,6 +38,7 @@ def mainMenu(conn, curr, uid):
         elif option == 'sp':
             resultTable = action.searchPosts(curr)
             no, act = action.displaySearchResult(resultTable, isPriv)
+
             opt = actionOpts[act]
             targetPost = resultTable[no]
             targetUid = targetPost[4]

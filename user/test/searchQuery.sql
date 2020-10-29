@@ -28,8 +28,10 @@
                         ifnull(numTitleBodyMatches, 0) as numTitleBodyMatches,
                         ifnull(numTagMatches, 0) as numTagMatches
                     FROM 
-                        (SELECT pid, numTitleBodyMatches, numTagMatches
-
+                        (SELECT 
+                            pid, 
+                            numTitleBodyMatches, 
+                            numTagMatches
                         FROM
                             (
                             SELECT 
@@ -42,35 +44,39 @@
                                 p.title LIKE '%'||:kw0||'%'
                                 OR p.body LIKE '%'||:kw0||'%'
                             ) 
-                                left outer join 
+                        LEFT OUTER JOIN 
                             (
                         SELECT
                             pid,
                             count(tag) as numTagMatches 
-                        from 
+                        FROM 
                             tags t
-                        where
+                        WHERE
                             tag like '%'||:kw0||'%'
-                        group by pid
+                        GROUP BY 
+                            pid
                     ) 
-                                using (pid) 
+                        USING (pid) 
 
-                        union
+                        UNION
 
-                        SELECT pid, numTitleBodyMatches, numTagMatches
-
+                        SELECT 
+                            pid, 
+                            numTitleBodyMatches, 
+                            numTagMatches
                         FROM
                             (
                         SELECT
                             pid,
                             count(tag) as numTagMatches 
-                        from 
+                        FROM 
                             tags t
-                        where
+                        WHERE
                             tag like '%'||:kw0||'%'
-                        group by pid
+                        GROUP BY 
+                            pid
                     )
-                                left outer join
+                        LEFT OUTER JOIN
                             (
                             SELECT 
                                 pid,
@@ -82,71 +88,7 @@
                                 p.title LIKE '%'||:kw0||'%'
                                 OR p.body LIKE '%'||:kw0||'%'
                             )
-                                using (pid)
-                        )
-                    
-Union all
-
-                    SELECT 
-                        pid,
-                        ifnull(numTitleBodyMatches, 0) as numTitleBodyMatches,
-                        ifnull(numTagMatches, 0) as numTagMatches
-                    FROM 
-                        (SELECT pid, numTitleBodyMatches, numTagMatches
-
-                        FROM
-                            (
-                            SELECT 
-                                pid,
-                                (length(lower(title))-length(replace(lower(title), :kw1, ''))) / length(:kw1)
-                                  + (length(lower(body))-length(replace(lower(body), :kw1, ''))) / length(:kw1) 
-                                    as numTitleBodyMatches
-                            FROM posts p
-                            WHERE 
-                                p.title LIKE '%'||:kw1||'%'
-                                OR p.body LIKE '%'||:kw1||'%'
-                            ) 
-                                left outer join 
-                            (
-                        SELECT
-                            pid,
-                            count(tag) as numTagMatches 
-                        from 
-                            tags t
-                        where
-                            tag like '%'||:kw1||'%'
-                        group by pid
-                    ) 
-                                using (pid) 
-
-                        union
-
-                        SELECT pid, numTitleBodyMatches, numTagMatches
-
-                        FROM
-                            (
-                        SELECT
-                            pid,
-                            count(tag) as numTagMatches 
-                        from 
-                            tags t
-                        where
-                            tag like '%'||:kw1||'%'
-                        group by pid
-                    )
-                                left outer join
-                            (
-                            SELECT 
-                                pid,
-                                (length(lower(title))-length(replace(lower(title), :kw1, ''))) / length(:kw1)
-                                  + (length(lower(body))-length(replace(lower(body), :kw1, ''))) / length(:kw1) 
-                                    as numTitleBodyMatches
-                            FROM posts p
-                            WHERE 
-                                p.title LIKE '%'||:kw1||'%'
-                                OR p.body LIKE '%'||:kw1||'%'
-                            )
-                                using (pid)
+                        USING (pid)
                         )
                     )
             GROUP BY pid
@@ -156,7 +98,8 @@ Union all
                     count(vno) as numVotes
                 FROM 
                     votes v
-                GROUP BY pid
+                GROUP BY 
+                    pid
             ) using (pid) 
                                 left outer join (
             SELECT

@@ -23,17 +23,13 @@ def postQ(conn, curr, poster):
         infoList.append(poster) # infoList = [pid, pdate, title, body, poster]
 
         curr.execute('INSERT INTO posts VALUES (?, ?, ?, ?, ?);', infoList)
-
         curr.execute('INSERT INTO questions VALUES (?, NULL);', [infoList[0]])
-
         conn.commit()
 
         print('Posting Complete!')
 
 
 def searchPosts(curr):
-
-    # TODO interface
 
     keywords = getKeywords(curr)
     fullSearchQuery = genSearchResult(keywords)
@@ -116,24 +112,25 @@ def displaySearchResult(resultTable, isPriv):
 
     currRowIndex = 0
     numRows = len(resultTable)
-    no = action = domain = validEntries = None
-    while currRowIndex < numRows: 
+    no = action = domain = None
+    validEntries = [] 
+    choseAction = False
+    while not choseAction and currRowIndex < numRows:
         currRowIndex = display(resultTable, currRowIndex)
         remainingRows = numRows - currRowIndex
 
         if remainingRows > 0:
             suffix = 's' if remainingRows > 1 else ''
             domain = "1-{}".format(currRowIndex) if currRowIndex > 1 else '1'
-            prompt = "There are {} more row{} to display.\nPress enter to view more, or pick no. ({}) to select: ".format(remainingRows, suffix, domain)
-            validEntries = ['y', '']
-
+            print("There are {} more row{} to display.\n".format(remainingRows, suffix))
+            prompt = "Press enter to view more, or pick no. [{}] to select: ".format(domain)
+            validEntries += ['y', '']
         else:
             domain = "1-{}".format(currRowIndex) if currRowIndex > 1 else '1'
-            prompt = "Search hit bottom. Pick no. ({}) to select: ".format(domain)
-            validEntries = []
+            prompt = "Search hit bottom. Pick no. [{}] to select: ".format(domain)
 
         if len(domain) == 1:
-            validEntries += [1]
+            validEntries.append('1')
         else:
             end = domain.split('-')[1]
             validEntries += list(map(str, range(1, int(end)+1)))  
@@ -144,6 +141,7 @@ def displaySearchResult(resultTable, isPriv):
             no = int(opt) - 1      # to match zero-index array
             postType = getPostType(resultTable[no])
             action = getAction(postType, isPriv)
+            choseAction = True
 
     return no, action
 
