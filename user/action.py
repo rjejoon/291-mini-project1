@@ -125,6 +125,7 @@ def castVote(conn, curr, pid, uid):
 
 def displaySearchResult(resultTable, isPriv, limit):
     # TODO organize this function
+    # TODO give a message when there is no matching post
     no = action = None
     totalRows = len(resultTable)
     remainingRows = totalRows - limit
