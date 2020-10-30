@@ -109,7 +109,7 @@ def castVote(conn, curr, pid, uid):
 
 
 def displaySearchResult(resultTable, isPriv):
-
+    # TODO gives a message when there is no matching post
     currRowIndex = 0
     numRows = len(resultTable)
     no = action = domain = None
@@ -146,12 +146,10 @@ def displaySearchResult(resultTable, isPriv):
     return no, action
 
 
+
 def getPostType(resultRow):
-
     # resultRow = (pid, pdate, title, body, poster, numVotes, numAns, numMatches)
-
-    # TODO could use row factory to use name of the col instead index.
-    return 'q' if isinstance(resultRow[6], int) else 'a'
+    return 'q' if isinstance(resultRow['numAns'], int) else 'a'
 
 
 def getKeywords(curr):
@@ -247,7 +245,7 @@ def display(result, currRowIndex):
         i += 1
         currRowIndex += 1
     print(lb)
-        
+     
     return currRowIndex
 
 def genSearchResult(keywords):
@@ -501,7 +499,6 @@ def isPidUnique(curr, pid):
     if not curr.fetchone():
         return True
     return False
-
 
 
 

@@ -38,11 +38,11 @@ def mainMenu(conn, curr, uid):
         elif option == 'sp':
             resultTable = action.searchPosts(curr)
             no, act = action.displaySearchResult(resultTable, isPriv)
-
+            
             opt = actionOpts[act]
             targetPost = resultTable[no]
-            targetUid = targetPost[4]
-            targetPid = targetPost[0]           # TODO row factory & use col name
+            targetUid = targetPost['poster']
+            targetPid = targetPost['pid']     
 
             if opt == 1:
                 action.castVote(conn, curr, targetPid, uid)
@@ -71,10 +71,10 @@ def mainMenu(conn, curr, uid):
 
 def signIn(conn, curr):
     '''
-    Prompts the user to enter their user ID and password. Checks if they exist in the database and Returns them.
+    Prompts the user to enter their user ID and password. Checks if they exist in the database and Returns the user info.
 
     Inputs: conn, curr
-    Returns: userID, password
+    Returns: uid
     '''
 
     # TODO user should be able to go back to the first screen
@@ -91,7 +91,9 @@ def signIn(conn, curr):
         curr.execute('SELECT * FROM users WHERE uid = :userID AND pwd = :password;',
                     {'userID': uid, 'password': pwd})
 
-        if curr.fetchone():
+        userRow = curr.fetchone()
+
+        if userRow:
             validInfo = True
         else:
             print('error: invalid user ID or password. Please try again.')
@@ -132,8 +134,7 @@ def signUp(conn, curr):
 
     print("Sign up successful!")
 
-    curr.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", 
-            [uid, name, pwd, city, crdate])
+    curr.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", (uid, name, pwd, city, crdate))
 
     conn.commit()
 

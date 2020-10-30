@@ -17,6 +17,7 @@ def main(argv):
     '''
     db = getDBFrom(argv)
     conn, curr = initConnAndCurrFrom(db)
+    tempTestData(curr, 'testSchema.sql')
 
     try:
         run = True
@@ -31,6 +32,7 @@ def main(argv):
                 page.mainMenu(conn, curr, uid)
             elif opt == 'su':
                 uid = page.signUp(conn, curr)
+                # TODO do we need to re-sign in ?
             else:
                 run = False
         sys.exit(0)
@@ -57,6 +59,7 @@ def initConnAndCurrFrom(db):
     db_path = dir_path + db 
 
     conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
     curr = conn.cursor()
 
     return conn, curr
@@ -69,6 +72,12 @@ def getDBFrom(argv):
         sys.exit(2)
     
     return argv[1]
+
+# TODO delete after testing
+def tempTestData(curr, filename):
+    sqlFile = open(filename)
+    sqlString = sqlFile.read()
+    curr.executescript(sqlString)
 
 
 

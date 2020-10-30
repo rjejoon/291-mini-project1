@@ -119,6 +119,78 @@ insert into posts values ('p004', date('now'), 'What is database?', '3Database, 
 insert into questions values ('p004', null);
 
 
+-------------------------------Test cases--------------------------------
+insert into users values ('moen', 'Moe Numasawa', '12345', 'Edmonton', date('now'));
+insert into users values ('mnmn', 'Moe Ordinary', '12345', 'Edmonton', date('now'));
+insert into privileged values ('moen');
 
+insert into posts values ('p005', date('now','-25 days'), 'What is database?', '4Database, database', 'rjej');
+insert into questions values ('p005', null);
+insert into tags values ('p005', 'Database');
+
+insert into posts values ('p006', date('now','-30 days'), 'What is database?', '3Database, database', 'rjej');
+insert into questions values ('p006', null);
+
+insert into posts values ('p007', date('now','-31 days'), 'What is answer?', '2answer', 'rjej');
+insert into questions values ('p007', null);
+
+-------------------------------Test cases for ANSWER--------------------------------
+insert into posts values ('0001', date('now'), 'This is an answer', '6answers, answer, answers, answer', 'mnmn');
+insert into answers values ('0001','p001');
+insert into tags values ('0001', 'answers');
+
+insert into posts values ('0002', date('now'), 'This is an answer', '4(v5)answers, answers, answer', 'mnmn');
+insert into answers values ('0002','p001');
+insert into tags values ('0002', 'fine');
+
+insert into posts values ('0003', date('now'), 'This is an ans', '5(v4)answers, answer, answers, answer', 'mnmn');
+insert into answers values ('0003','p002');
+insert into tags values ('0003', 'answers');
+
+insert into posts values ('0004', date('now'), 'This is an ans', '4answers, answer, answers', 'mnmn');
+insert into answers values ('0004','p003');
+insert into tags values ('0004', 'answers');
+
+insert into posts values ('0005', date('now'), 'This is an ans', '1answers', 'mnmn');
+insert into answers values ('0005','p003');
+
+insert into posts values ('0006', date('now'), 'This is an answer', '2answers', 'mnmn');
+insert into answers values ('0006','p004');
+
+
+-------------------------------Test cases for VOTE--------------------------------
+insert into votes values ('p001',1,date('now','-5 days'),'mnmn');
+insert into votes values ('p001',2,date('now','-6 days'),'mnmn');
+insert into votes values ('p001',3,date('now','-7 days'),'mnmn');
+insert into votes values ('p001',4,date('now','-8 days'),'moen');
+insert into votes values ('p001',5,date('now','-9 days'),'moen');
+insert into votes values ('p001',6,date('now','-2 days'),'moen');
+insert into votes values ('p001',7,date('now','-5 days'),'moen');
+
+insert into votes values ('p002',1,date('now','-5 days'),'mnmn');
+insert into votes values ('p002',2,date('now','-6 days'),'mnmn');
+insert into votes values ('p002',3,date('now','-7 days'),'mnmn');
+insert into votes values ('p002',4,date('now','-8 days'),'moen');
+insert into votes values ('p002',5,date('now','-9 days'),'moen');
+insert into votes values ('p002',6,date('now','-2 days'),'moen');
+
+insert into votes values ('0002',1,date('now','-5 days'),'mnmn');
+insert into votes values ('0002',2,date('now','-6 days'),'mnmn');
+insert into votes values ('0002',3,date('now','-7 days'),'mnmn');
+insert into votes values ('0002',4,date('now','-8 days'),'moen');
+insert into votes values ('0002',5,date('now','-9 days'),'moen');
+
+insert into votes values ('0003',1,date('now','-5 days'),'mnmn');
+insert into votes values ('0003',2,date('now','-6 days'),'mnmn');
+insert into votes values ('0003',3,date('now','-7 days'),'mnmn');
+insert into votes values ('0003',4,date('now','-8 days'),'moen');
+
+
+
+-------------------------------Test cases for BADGE--------------------------------
 insert into badges values ('excellent question','gold');
-insert into badges values ('good question', 'silver');
+insert into badges values ('great question', 'silver');
+insert into badges values ('excellent answer', 'gold');
+insert into badges values ('great answer', 'silver');
+insert into badges values ('good question', 'bronze');
+insert into badges values ('good answer', 'bronze');
