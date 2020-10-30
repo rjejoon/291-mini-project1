@@ -42,8 +42,8 @@ def mainMenu(conn, curr, uid):
                 
                 opt = actionOpts[act]
                 targetPost = resultTable[no]
-                targetUid = targetPost['poster']
-                targetPid = targetPost['pid']  
+                targetUid = targetPost[4]
+                targetPid = targetPost[0]           # TODO row factory & use col name
 
                 if opt == 1:
                     action.castVote(conn, curr, targetPid, uid)
@@ -74,10 +74,10 @@ def mainMenu(conn, curr, uid):
 
 def signIn(conn, curr):
     '''
-    Prompts the user to enter their user ID and password. Checks if they exist in the database and Returns the user info.
+    Prompts the user to enter their user ID and password. Checks if they exist in the database and Returns them.
 
     Inputs: conn, curr
-    Returns: uid
+    Returns: userID
     '''
 
     i = 0
@@ -90,9 +90,7 @@ def signIn(conn, curr):
         curr.execute('SELECT * FROM users WHERE uid = :userID AND pwd = :password;',
                     {'userID': uid, 'password': pwd})
 
-        userRow = curr.fetchone()
-
-        if userRow:
+        if curr.fetchone():
             validInfo = True
         else:
             print(bcolor.errmsg('error: invalid user ID or password. Please try again.'))
@@ -118,7 +116,7 @@ def signUp(conn, curr):
         uid = getID(conn, curr)
         f_name = input("Enter your first name: ").capitalize() 
         l_name = input("Enter your last name: ").capitalize()
-        name = f_name + l_name
+        name = ' '.join((f_name, l_name)) 
         city = input("Enter your city: ").capitalize()
         pwd = getPassword()
         crdate = str(date.today())
@@ -129,11 +127,17 @@ def signUp(conn, curr):
         print("   name: {}".format(name))
         print("   city: {}".format(city))
 
-        valid = checkValid()
+        if checkValid():
+            valid = True
+        else:
+            cont = getValidInput('Do you wish to continue signing up? [y/n] ', ['y', 'n'])
+            if cont == 'n':
+                return None
 
     print(bcolor.green("Sign up successful!"))
 
-    curr.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", (uid, name, pwd, city, crdate))
+    curr.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", 
+            [uid, name, pwd, city, crdate])
 
     conn.commit()
 
@@ -229,11 +233,7 @@ def checkValid():
     uin = getValidInput(prompt, ['y','n'])
     if uin == 'y':
         return True
-    elif uin == 'n':
-        # TODO do you wish continue signing up?
-        # cont = getValidInput('Do you wish to continue signing up? ', ['y', 'n'])
-       
-        return False
+    return False
 
 
 def isPrivileged(curr, uid):
