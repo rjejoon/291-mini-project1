@@ -20,6 +20,7 @@ def main(argv):
     tempTestData(curr, 'testSchema.sql')
 
     try:
+        os.system('clear')
         run = True
         while run:
             page.printFirstScreen() 

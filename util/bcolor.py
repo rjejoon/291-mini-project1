@@ -26,3 +26,8 @@ def pink(s):
 def bold(s):
     return BOLD + s + ENDC
 
+def warning(s):
+    return WARNING + s + ENDC
+
+def green(s):
+    return OKGREEN + s + ENDC
