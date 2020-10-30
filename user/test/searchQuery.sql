@@ -90,6 +90,146 @@
                             )
                         USING (pid)
                         )
+                    
+UNION ALL
+
+                    SELECT 
+                        pid,
+                        ifnull(numTitleBodyMatches, 0) as numTitleBodyMatches,
+                        ifnull(numTagMatches, 0) as numTagMatches
+                    FROM 
+                        (SELECT 
+                            pid, 
+                            numTitleBodyMatches, 
+                            numTagMatches
+                        FROM
+                            (
+                            SELECT 
+                                pid,
+                                (length(lower(title))-length(replace(lower(title), :kw1, ''))) / length(:kw1)
+                                  + (length(lower(body))-length(replace(lower(body), :kw1, ''))) / length(:kw1) 
+                                    as numTitleBodyMatches
+                            FROM posts p
+                            WHERE 
+                                p.title LIKE '%'||:kw1||'%'
+                                OR p.body LIKE '%'||:kw1||'%'
+                            ) 
+                        LEFT OUTER JOIN 
+                            (
+                        SELECT
+                            pid,
+                            count(tag) as numTagMatches 
+                        FROM 
+                            tags t
+                        WHERE
+                            tag like '%'||:kw1||'%'
+                        GROUP BY 
+                            pid
+                    ) 
+                        USING (pid) 
+
+                        UNION
+
+                        SELECT 
+                            pid, 
+                            numTitleBodyMatches, 
+                            numTagMatches
+                        FROM
+                            (
+                        SELECT
+                            pid,
+                            count(tag) as numTagMatches 
+                        FROM 
+                            tags t
+                        WHERE
+                            tag like '%'||:kw1||'%'
+                        GROUP BY 
+                            pid
+                    )
+                        LEFT OUTER JOIN
+                            (
+                            SELECT 
+                                pid,
+                                (length(lower(title))-length(replace(lower(title), :kw1, ''))) / length(:kw1)
+                                  + (length(lower(body))-length(replace(lower(body), :kw1, ''))) / length(:kw1) 
+                                    as numTitleBodyMatches
+                            FROM posts p
+                            WHERE 
+                                p.title LIKE '%'||:kw1||'%'
+                                OR p.body LIKE '%'||:kw1||'%'
+                            )
+                        USING (pid)
+                        )
+                    
+UNION ALL
+
+                    SELECT 
+                        pid,
+                        ifnull(numTitleBodyMatches, 0) as numTitleBodyMatches,
+                        ifnull(numTagMatches, 0) as numTagMatches
+                    FROM 
+                        (SELECT 
+                            pid, 
+                            numTitleBodyMatches, 
+                            numTagMatches
+                        FROM
+                            (
+                            SELECT 
+                                pid,
+                                (length(lower(title))-length(replace(lower(title), :kw2, ''))) / length(:kw2)
+                                  + (length(lower(body))-length(replace(lower(body), :kw2, ''))) / length(:kw2) 
+                                    as numTitleBodyMatches
+                            FROM posts p
+                            WHERE 
+                                p.title LIKE '%'||:kw2||'%'
+                                OR p.body LIKE '%'||:kw2||'%'
+                            ) 
+                        LEFT OUTER JOIN 
+                            (
+                        SELECT
+                            pid,
+                            count(tag) as numTagMatches 
+                        FROM 
+                            tags t
+                        WHERE
+                            tag like '%'||:kw2||'%'
+                        GROUP BY 
+                            pid
+                    ) 
+                        USING (pid) 
+
+                        UNION
+
+                        SELECT 
+                            pid, 
+                            numTitleBodyMatches, 
+                            numTagMatches
+                        FROM
+                            (
+                        SELECT
+                            pid,
+                            count(tag) as numTagMatches 
+                        FROM 
+                            tags t
+                        WHERE
+                            tag like '%'||:kw2||'%'
+                        GROUP BY 
+                            pid
+                    )
+                        LEFT OUTER JOIN
+                            (
+                            SELECT 
+                                pid,
+                                (length(lower(title))-length(replace(lower(title), :kw2, ''))) / length(:kw2)
+                                  + (length(lower(body))-length(replace(lower(body), :kw2, ''))) / length(:kw2) 
+                                    as numTitleBodyMatches
+                            FROM posts p
+                            WHERE 
+                                p.title LIKE '%'||:kw2||'%'
+                                OR p.body LIKE '%'||:kw2||'%'
+                            )
+                        USING (pid)
+                        )
                     )
             GROUP BY pid
             ) left outer join (

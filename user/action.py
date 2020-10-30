@@ -109,7 +109,6 @@ def castVote(conn, curr, pid, uid):
 
 
 def displaySearchResult(resultTable, isPriv):
-    # TODO gives a message when there is no matching post
     currRowIndex = 0
     numRows = len(resultTable)
     no = action = domain = None
@@ -174,7 +173,7 @@ def getAction(postType, isPriv):
 
     privOptions = OrderedDict()
     privOptions['gb'] = '{}ive a {}adge'.format(bcolor.u_ualphas[6], bcolor.u_lalphas[1])
-    privOptions['t'] = '{}dd a {}ag'.format(bcolor.u_ualphas[0], bcolor.u_lalphas[19])
+    privOptions['t'] = 'Add a {}ag'.format(bcolor.u_lalphas[19])
     privOptions['ep'] = '{}dit {}ost'.format(bcolor.u_ualphas[4], bcolor.u_lalphas[15])
 
     privAnsOption = OrderedDict()
@@ -239,7 +238,8 @@ def display(result, currRowIndex):
         r += row[3][:d['Body']-2].rjust(d['Body'], ' ') + '|'
         r += row[4].center(d['poster'], ' ') + '|'
         r += str(row[5]).center(d['# of Votes'], ' ') + '|'
-        r += str(row[6]).center(d['# of Answers'], ' ') + '|'
+        numAns = '--' if row[6] is None else str(row[6])
+        r += numAns.center(d['# of Answers'], ' ') + '|'
 
         print(r, sep='\n')
         i += 1

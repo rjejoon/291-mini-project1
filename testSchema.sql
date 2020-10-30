@@ -78,6 +78,10 @@ insert into users values ('rj', 'Kevin Ryu', 'rjj0220', 'Regina', date('now'));
 insert into users values ('rjej', 'Kevin Ryu', 'rjj0220', 'Regina', date('now'));
 insert into privileged values ('rjej');
 
+insert into users values ('moen', 'Moe Numasawa', '12345', 'Edmonton', date('now'));
+insert into users values ('mnmn', 'Moe Ordinary', '12345', 'Edmonton', date('now'));
+insert into privileged values ('moen');
+
 
 -- ==========================Test cases for postQ()================================
 -- 1. unique pid is assigned
@@ -95,9 +99,6 @@ insert into questions values ('ijkl', null);
 
 insert into posts values ('zzzz', date('now'), 'What is a question?', '5question, questions, question, question', 'rjej');
 insert into questions values ('zzzz', null);
-
-
-
 
 
 
@@ -119,20 +120,18 @@ insert into posts values ('p004', date('now'), 'What is database?', '3Database, 
 insert into questions values ('p004', null);
 
 
--------------------------------Test cases--------------------------------
-insert into users values ('moen', 'Moe Numasawa', '12345', 'Edmonton', date('now'));
-insert into users values ('mnmn', 'Moe Ordinary', '12345', 'Edmonton', date('now'));
-insert into privileged values ('moen');
-
-insert into posts values ('p005', date('now','-25 days'), 'What is database?', '4Database, database', 'rjej');
+--2. Multiple keywords search (keywords: dog, cat, bird)
+insert into posts values ('p005', date('now'), 'My dogs and cats?', '10dog, dog, dog, dog, cat, cat, cat, cat', 'rjej');
 insert into questions values ('p005', null);
-insert into tags values ('p005', 'Database');
+insert into tags values ('p005', 'Animal');
 
-insert into posts values ('p006', date('now','-30 days'), 'What is database?', '3Database, database', 'rjej');
+insert into posts values ('p006', date('now'), 'I love dogs, cats, birds?', '12dog, dog, dog, cat, cat, cat, birds, bird, bird', 'rjej');
 insert into questions values ('p006', null);
+insert into tags values ('p006', 'Animal');
+insert into tags values ('p006', 'Birds');
 
-insert into posts values ('p007', date('now','-31 days'), 'What is answer?', '2answer', 'rjej');
-insert into questions values ('p007', null);
+insert into posts values ('p007', date('now'), 'Ans for p005', '8dog, dog, dog, dog, cat, cat, cat, cat', 'rjej');
+insert into answers values ('p007', 'p005');
 
 -------------------------------Test cases for ANSWER--------------------------------
 insert into posts values ('0001', date('now'), 'This is an answer', '6answers, answer, answers, answer', 'mnmn');
