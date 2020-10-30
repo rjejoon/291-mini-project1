@@ -119,6 +119,18 @@ insert into posts values ('p004', date('now'), 'What is database?', '3Database, 
 insert into questions values ('p004', null);
 
 
+--2. Multiple keywords search (keywords: dog, cat, bird)
+insert into posts values ('p005', date('now'), 'My dogs and cats?', '10dog, dog, dog, dog, cat, cat, cat, cat', 'rjej');
+insert into questions values ('p005', null);
+insert into tags values ('p005', 'Animal');
+
+insert into posts values ('p006', date('now'), 'I love dogs, cats, birds?', '12dog, dog, dog, cat, cat, cat, birds, bird, bird', 'rjej');
+insert into questions values ('p006', null);
+insert into tags values ('p006', 'Animal');
+insert into tags values ('p006', 'Birds');
+
+insert into posts values ('p007', date('now'), 'Ans for p005', '8dog, dog, dog, dog, cat, cat, cat, cat', 'rjej');
+insert into answers values ('p007', 'p005');
 
 insert into badges values ('excellent question','gold');
 insert into badges values ('good question', 'silver');

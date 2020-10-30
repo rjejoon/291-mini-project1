@@ -37,25 +37,28 @@ def mainMenu(conn, curr, uid):
             action.postQ(conn, curr, uid)
         elif option == 'sp':
             resultTable = action.searchPosts(curr)
-            no, act = action.displaySearchResult(resultTable, isPriv)
+            if len(resultTable) > 0:
+                no, act = action.displaySearchResult(resultTable, isPriv)
+                
+                opt = actionOpts[act]
+                targetPost = resultTable[no]
+                targetUid = targetPost[4]
+                targetPid = targetPost[0]           # TODO row factory & use col name
 
-            opt = actionOpts[act]
-            targetPost = resultTable[no]
-            targetUid = targetPost[4]
-            targetPid = targetPost[0]           # TODO row factory & use col name
-
-            if opt == 1:
-                action.castVote(conn, curr, targetPid, uid)
-            elif opt == 2:
-                action.postAns(conn, curr, uid, targetPid)
-            elif opt == 3:
-                privAction.markAnswer(conn, curr, targetPid)
-            elif opt == 4:
-                privAction.giveBadge(conn, curr, targetUid)
-            elif opt == 5:
-                privAction.addTag(conn, curr, targetPid)
-            elif opt == 6:
-                privAction.edit(conn, curr, targetPid)
+                if opt == 1:
+                    action.castVote(conn, curr, targetPid, uid)
+                elif opt == 2:
+                    action.postAns(conn, curr, uid, targetPid)
+                elif opt == 3:
+                    privAction.markAnswer(conn, curr, targetPid)
+                elif opt == 4:
+                    privAction.giveBadge(conn, curr, targetUid)
+                elif opt == 5:
+                    privAction.addTag(conn, curr, targetPid)
+                elif opt == 6:
+                    privAction.edit(conn, curr, targetPid)
+            else:
+                print(bcolor.errmsg('No posts found.'))
             
         elif option == 'so':
             if checkSignout():
