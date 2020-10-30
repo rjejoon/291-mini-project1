@@ -80,6 +80,7 @@ insert into privileged values ('rjej');
 
 insert into users values ('moen', 'Moe Numasawa', '12345', 'Edmonton', date('now'));
 insert into users values ('mnmn', 'Moe Ordinary', '12345', 'Edmonton', date('now'));
+insert into users values ('okay', 'TEST', '12345', 'Edmonton', date('now'));
 insert into privileged values ('moen');
 
 

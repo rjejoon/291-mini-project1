@@ -78,37 +78,24 @@ def castVote(conn, curr, pid, uid):
         uid -- uid of the current user (str)
     '''
     print('\n' + bcolor.pink('< Cast Vote >'))
-    valid = False
-    while not valid:
-        confirm = input('Confirmation: Do you want to vote for this post? y/n ').lower()
 
-        if confirm == 'y':
-            # checks if the user has already voted for the selected post
-            curr.execute('SELECT * FROM votes WHERE pid = ? and uid = ?',[pid, uid])
-            if curr.fetchone():
-                print(bcolor.errmsg("error: you've already voted for this post."))
-            else:
-                curr.execute('SELECT * FROM votes;')
-                vdate = str(date.today())
+    prompt = 'Do you want to vote on this post? [y/n] '
+    confirm = page.getValidInput(prompt, ['y', 'n'])
 
-                #TODO make a function
-                if not curr.fetchone():
-                    vno = 1
-                else:
-                    # gets the max vno in the database
-                    maxVno = curr.execute('SELECT MAX(vno) FROM votes;').fetchone()[0]
-                    vno = int(maxVno) + 1 if maxVno else 1
-                
-                curr.execute('INSERT INTO votes VALUES (?, ?, ?, ?)', [pid, vno, vdate, uid])
-                conn.commit()
-
-                print()
-                print(bcolor.green('Voting Complete!'))
+    if confirm == 'y':
+        # checks if the user has already voted for the selected post
+        curr.execute('SELECT * FROM votes WHERE pid = ? and uid = ?',[pid, uid])
+        if curr.fetchone():
+            print(bcolor.errmsg("error: you've already voted for this post."))
+        else:
+            vdate = str(date.today())
+            vno = getVno(curr)
             
-            valid = True
+            curr.execute('INSERT INTO votes VALUES (?, ?, ?, ?)', [pid, vno, vdate, uid])
+            conn.commit()
 
-        elif confirm == 'n':
-            valid = True
+            print()
+            print(bcolor.green('Voting Complete!'))
 
 
 def displaySearchResult(resultTable, isPriv):
@@ -464,17 +451,6 @@ def continuePost():
     uin = page.getValidInput(prompt, ['y', 'n'])
     return True if uin == 'y' else False
 
-def checkValid():
-    '''
-    Prompts the user to double check their account information and returns the result.
-    '''
-    while True:
-        checkValid = input("\nIs this correct? y/n ").lower()
-        if checkValid == 'y':
-            return True
-        elif checkValid == 'n':
-            return False
-
 
 def getLargestPidNum(curr):
     
@@ -502,6 +478,21 @@ def isPidUnique(curr, pid):
     return False
 
 
+def getVno(curr):
+    '''
+    Generates a new vno and returns it
+
+    Inputs: curr -- sqllite3.Connection
+    Returns: vno -- int
+    '''
+    curr.execute('SELECT * FROM votes;')
+    if not curr.fetchone():
+        vno = 1
+    else:
+        # gets the max vno in the database
+        maxVno = curr.execute('SELECT MAX(vno) FROM votes;').fetchone()[0]
+        vno = int(maxVno) + 1 if maxVno else 1
+    return vno
 
 
 if __name__ == '__main__':
