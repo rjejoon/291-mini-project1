@@ -77,16 +77,12 @@ def signIn(conn, curr):
     Prompts the user to enter their user ID and password. Checks if they exist in the database and Returns them.
 
     Inputs: conn, curr
-    Returns: userID, password
+    Returns: userID
     '''
 
-    # TODO user should be able to go back to the first screen
     i = 0
     validInfo = False
     while not validInfo:
-
-        if i % 3 == 0:
-            pass
 
         uid = input('\nEnter your user ID: ')
         pwd = getpass.getpass('Enter your password: ')
@@ -97,9 +93,9 @@ def signIn(conn, curr):
         if curr.fetchone():
             validInfo = True
         else:
-            print('error: invalid user ID or password. Please try again.')
+            print(bcolor.errmsg('error: invalid user ID or password. Please try again.'))
         
-    print('You have successfully signed in.')
+    print(bcolor.green('You have successfully signed in.'))
 
     return uid
 
@@ -117,23 +113,23 @@ def signUp(conn, curr):
     while not valid:
 
         print()
-        # TODO uid must be 4 chars 
         uid = getID(conn, curr)
-        name = input("Enter your first and last name: ")
-        city = input("Enter your city: ")
-        # TODO pwd can only have alphanumeric characters.
+        f_name = input("Enter your first name: ").capitalize() 
+        l_name = input("Enter your last name: ").capitalize()
+        name = f_name + l_name
+        city = input("Enter your city: ").capitalize()
         pwd = getPassword()
         crdate = str(date.today())
             
         print()
-        print("Please double check your information: ")
+        print(bcolor.warning("Please double check your information: "))
         print("   id: {}".format(uid))
         print("   name: {}".format(name))
         print("   city: {}".format(city))
 
         valid = checkValid()
 
-    print("Sign up successful!")
+    print(bcolor.green("Sign up successful!"))
 
     curr.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?)", 
             [uid, name, pwd, city, crdate])
@@ -142,12 +138,12 @@ def signUp(conn, curr):
 
     return uid
 
+
 def printFirstScreen():
     '''
     Displays the UI of the first screen of the program.
     '''
 
-    os.system('clear')
     print()
     print(bcolor.pink('Menu:'))
     print()
@@ -177,18 +173,32 @@ def getID(conn, curr):
     conn -- sqlite3.Connection
     curr -- sqlite3.Cursor
     '''
-    # TODO trim it to 4 chars, or allow only at most 4 chars
     valid = False
+    uid = None
     while not valid: 
-        uid = input("Enter your id: ")
-        curr.execute("SELECT * FROM users WHERE uid = ?;", [uid])
-        if curr.fetchone():
-            print("error: user id already taken.")
+        if not uid: 
+            uid = input("Enter your id: ")
+        if isUnique(curr, uid):
+            if len(uid) > 4:
+                prompt = bcolor.warning("Warning: maximum id length is 4. Use '{}' instead? [y/n] ".format(uid[:4]))
+                uin = getValidInput(prompt, ['y', 'n'])
+                uid = uid[:4] if uin == 'y' else None
+            else:
+                valid = True
         else:
-            valid = True
+            print(bcolor.errmsg("error: user id already taken."))
+            uid = None
 
     return uid
 
+
+def isUnique(curr, uid):
+    
+    curr.execute("SELECT * FROM users WHERE uid = ?;", [uid])
+    if not curr.fetchone():
+        return True
+    return False
+    
 
 def getPassword():
     '''
@@ -197,11 +207,14 @@ def getPassword():
     valid = False
     while not valid:
         pwd = getpass.getpass("Enter your password: ")
-        pwd2 = getpass.getpass("Enter the password again: ")
-        if pwd == pwd2:
-            valid = True
+        if pwd.isalnum():
+            pwd2 = getpass.getpass("Enter the password again: ")
+            if pwd == pwd2:
+                valid = True
+            else:
+                print(bcolor.errmsg("error: passwords do not match."))
         else:
-            print("error: passwords do not match.")
+            print(bcolor.errmsg("error: password cannot contain any special characters.")) 
 
     return pwd
 
@@ -210,13 +223,16 @@ def checkValid():
     '''
     Prompts the user to double check their account information and returns the result.
     '''
-    while True:
-        checkValid = input("\nIs this correct? y/n ").lower()
-        if checkValid == 'y':
-            return True
-        elif checkValid == 'n':
-            # TODO Do you want to still continue signing up?
-            return False
+    print()
+    prompt = 'Is this correct? [y/n] '
+    uin = getValidInput(prompt, ['y','n'])
+    if uin == 'y':
+        return True
+    elif uin == 'n':
+        # TODO do you wish continue signing up?
+        # cont = getValidInput('Do you wish to continue signing up? ', ['y', 'n'])
+       
+        return False
 
 
 def isPrivileged(curr, uid):

@@ -26,7 +26,8 @@ def postQ(conn, curr, poster):
         curr.execute('INSERT INTO questions VALUES (?, NULL);', [infoList[0]])
         conn.commit()
 
-        print('Posting Complete!')
+        print()
+        print(bcolor.green('Posting Complete!'))
 
 
 def searchPosts(curr):
@@ -62,7 +63,8 @@ def postAns(conn, curr, poster, qid):
 
         conn.commit()
 
-        print('Posting Complete!')
+        print()
+        print(bcolor.green('Posting Complete!'))
 
 
 def castVote(conn, curr, pid, uid):
@@ -100,7 +102,8 @@ def castVote(conn, curr, pid, uid):
                 curr.execute('INSERT INTO votes VALUES (?, ?, ?, ?)', [pid, vno, vdate, uid])
                 conn.commit()
 
-                print('Voting Completed!')
+                print()
+                print(bcolor.green('Voting Complete!'))
             
             valid = True
 
@@ -413,8 +416,7 @@ def getPInfo(curr):
 
     Input: curr -- sqllite3.Connection
     '''
-    valid = False
-    while not valid:
+    while True:
         pid = genPid(curr)
         pdate = str(date.today())
         title = input("Enter your title: ")
@@ -423,9 +425,11 @@ def getPInfo(curr):
         print('\nPlease double check your information: ')
         print('   Title: {}'.format(title))
         print('   Body: {}'.format(body))
+        print()
 
-        if checkValid():
-            valid = True
+        prompt = 'Is this correct? [y/n] '
+        uin = page.getValidInput(prompt, ['y', 'n'])
+        if uin == 'y':
             return [pid, pdate, title, body]
         else:
             if not continuePost():
@@ -458,13 +462,10 @@ def continuePost():
     '''
     Confirms the users if they still want to make a post.
     '''
-    while True:
-        checkValid = input('Do you still want to make a post? y/n ').lower()
-        if checkValid == 'y':
-            print()
-            return True
-        elif checkValid == 'n':
-            return False
+
+    prompt = 'Do you still want to make a post? [y/n] '
+    uin = page.getValidInput(prompt, ['y', 'n'])
+    return True if uin == 'y' else False
 
 def checkValid():
     '''

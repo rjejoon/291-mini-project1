@@ -19,6 +19,7 @@ def main(argv):
     conn, curr = initConnAndCurrFrom(db)
 
     try:
+        os.system('clear')
         run = True
         while run:
             page.printFirstScreen() 
