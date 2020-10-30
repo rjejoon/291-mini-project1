@@ -87,17 +87,19 @@ def signIn(conn, curr):
         uid = input('\nEnter your user ID: ')
         pwd = getpass.getpass('Enter your password: ')
 
-        curr.execute('SELECT * FROM users WHERE uid = :userID AND pwd = :password;',
+        curr.execute('SELECT * FROM users WHERE uid = :userID COLLATE NOCASE AND pwd = :password;',
                     {'userID': uid, 'password': pwd})
 
-        if curr.fetchone():
+        userRow = curr.fetchone()
+
+        if userRow:
             validInfo = True
         else:
             print(bcolor.errmsg('error: invalid user ID or password. Please try again.'))
         
     print(bcolor.green('You have successfully signed in.'))
 
-    return uid
+    return userRow['uid']
 
 
 def signUp(conn, curr):
