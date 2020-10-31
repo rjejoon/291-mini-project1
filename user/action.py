@@ -84,7 +84,7 @@ def castVote(conn, curr, pid, uid):
 
     if confirm == 'y':
         # checks if the user has already voted for the selected post
-        curr.execute('SELECT * FROM votes WHERE pid = ? and uid = ?',[pid, uid])
+        curr.execute('SELECT * FROM votes WHERE pid = ? and uid = ?;', [pid, uid])
         if curr.fetchone():
             print(bcolor.errmsg("error: you've already voted for this post."))
         else:
