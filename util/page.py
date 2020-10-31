@@ -79,8 +79,6 @@ def signIn(conn, curr):
     Inputs: conn, curr
     Returns: userID
     '''
-
-    i = 0
     validInfo = False
     while not validInfo:
 
@@ -94,13 +92,16 @@ def signIn(conn, curr):
 
         if userRow:
             validInfo = True
+            print(bcolor.green('You have successfully signed in.'))
+            return userRow['uid']
+            
         else:
-            print(bcolor.errmsg('error: invalid user ID or password. Please try again.'))
-        
-    print(bcolor.green('You have successfully signed in.'))
-
-    return userRow['uid']
-
+            print(bcolor.errmsg('error: invalid user ID or password.'))
+            prompt = "Do you stil want to sign in? [y/n] "
+            uin = getValidInput(prompt, ['y','n'])
+            if uin == 'n':
+                return None
+            
 
 def signUp(conn, curr):
     '''
