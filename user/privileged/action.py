@@ -5,30 +5,29 @@ from util import bcolor
 
 def markAnswer(conn, curr, aid):
 
-    curr.execute("SELECT pid FROM answers where pid=?;", (aid, ))
-    pid = curr.fetchone()[0]
+    print(bcolor.pink('\n< Mark as Accepted Answer >'))
 
-    curr.execute("SELECT theaid fROM questions where pid=?;", (pid, ))
-    # aa: accepted answer
-    aaExists = False if not curr.fetchone() else True
+    curr.execute("SELECT * FROM answers where pid=?;", (aid, ))
+    qid = curr.fetchone()['qid']
 
-    if aaExists:
-        prompt = "Warning: Accepted answer already exists! Proceed to change? y/n:"
-        valid = False
-        while not valid:
-            inp = input(prompt)
-            if valid == 'y':
-                valid = True
-                changeAA(conn, curr, pid, aid)
-            elif valid == 'n':
-                valid = True
+    prompt = 'Do you want to mark this post as an aceepted answer? [y/n] '
+    uin = page.getValidInput(prompt, ['y','n'])
+
+    if uin == 'y':
+
+        curr.execute("SELECT * FROM questions where pid=? and theaid IS NOT NULL;", (qid, ))
+        aaExists = True if curr.fetchone() else False # aa: accepted answer
+            
+        if aaExists:
+            prompt = bcolor.warning("Warning: Accepted answer already exists. Proceed to change? [y/n] ")
+            uin = page.getValidInput(prompt, ['y','n'])
+            if uin == 'y':
+                changeAA(conn, curr, qid, aid)
             else:
-                print("error: invalid command")
+                print(bcolor.green('\nAccepted answer was not updated.'))
     
-    else:
-        changeAA(conn, curr, pid, aid)
-
-    print("Accepted answer successfully updated!")
+        else:
+            changeAA(conn, curr, qid, aid)
             
 
 def giveBadge(conn, curr, uid):
@@ -49,7 +48,7 @@ def giveBadge(conn, curr, uid):
         print(bcolor.errmsg("action failed: this poster has already received a badge today."))
 
     else:
-        print('\n< Give Badge >')
+        print(bcolor.pink('\n< Give Badge >'))
         displayBadge(curr)
         valid = False
         while not valid:
@@ -85,7 +84,7 @@ def addTag(conn, curr, pid):
         curr -- sqllite3.Connection
         pid -- pid of the selected post (str)
     '''
-    print('\n< Add Tags >')
+    print(bcolor.pink('\n< Add Tags >'))
 
     currentTags = getCurrentTag(curr, pid)
     displayCurrentTag(currentTags)
@@ -207,6 +206,8 @@ def changeAA(conn:sqlite3.Connection, curr, pid, aid):
                                          'pid': pid})
     conn.commit()
 
+    print(bcolor.green("\nAccepted answer updated!"))
+
 
 def badgeGivenTdy(curr, uid, bdate):
     '''
@@ -297,10 +298,10 @@ def displayCurrentTag(currentTags):
     Input: currentTags -- list
     '''
     if len(currentTags) == 0:
-        print('\nThere is no tag on this post yet.')
+        print('There is no tag on this post yet.')
     else:
         csuffix = genSuffix(currentTags)
-        print("\nCurrent Tag{}: {}".format(csuffix, ', '.join(currentTags)))
+        print("Current Tag{}: {}".format(csuffix, ', '.join(currentTags)))
 
 
 def getDuplicateTag(currentTags, newTags):

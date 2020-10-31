@@ -195,3 +195,15 @@ insert into badges values ('excellent answer', 'gold');
 insert into badges values ('great answer', 'silver');
 insert into badges values ('good question', 'bronze');
 insert into badges values ('good answer', 'bronze');
+
+--- TEST CASE FOR MARK ANSWER ---
+insert into posts values ('p009', date('now'), 'Testing for mark answer?', 'a001 is a default accepted answer', 'rjej');
+insert into questions values ('p009', null);
+
+insert into posts values ('a001', date('now'), 'This is an accepted answer', 'mark, mark', 'mnmn');
+insert into answers values ('a001','p009');
+
+update questions set theaid = 'a001' where pid = 'p009';
+
+insert into posts values ('a002', date('now'), 'Change this to accepted answer', 'mark, mark', 'mnmn');
+insert into answers values ('a002','p009');
