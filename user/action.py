@@ -403,7 +403,7 @@ def getPInfo(curr):
     while True:
         pid = genPid(curr)
         pdate = str(date.today())
-        title = input("Enter your title: ")
+        title = input("\nEnter your title: ")
         body = input("Enter your body: ")
 
         print('\nPlease double check your information: ')
@@ -416,7 +416,8 @@ def getPInfo(curr):
         if uin == 'y':
             return [pid, pdate, title, body]
         else:
-            if not continuePost():
+            prompt = 'Do you still want to make a post? [y/n] '
+            if not page.continueAction(prompt):
                 return False 
 
 
@@ -442,14 +443,6 @@ def genPid(curr):
     return pid
 
 
-def continuePost():
-    '''
-    Confirms the users if they still want to make a post.
-    '''
-
-    prompt = 'Do you still want to make a post? [y/n] '
-    uin = page.getValidInput(prompt, ['y', 'n'])
-    return True if uin == 'y' else False
 
 
 def getLargestPidNum(curr):

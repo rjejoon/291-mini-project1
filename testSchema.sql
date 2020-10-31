@@ -188,6 +188,7 @@ insert into votes values ('0003',4,date('now','-8 days'),'moen');
 
 
 -------------------------------Test cases for BADGE--------------------------------
+
 insert into badges values ('excellent question','gold');
 insert into badges values ('great question', 'silver');
 insert into badges values ('excellent answer', 'gold');

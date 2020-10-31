@@ -238,6 +238,15 @@ def checkValid():
     return False
 
 
+
+def continueAction(prompt):
+    '''
+    Confirms the users if they still want to continue the current action.
+    '''
+    uin = getValidInput(prompt, ['y', 'n'])
+    return True if uin == 'y' else False
+
+
 def isPrivileged(curr, uid):
 
     curr.execute("SELECT uid FROM privileged where uid = ?;", (uid, ))

@@ -1,5 +1,7 @@
 import sqlite3
 from datetime import date
+from util import page
+from util import bcolor
 
 def markAnswer(conn, curr, aid):
 
@@ -35,53 +37,93 @@ def giveBadge(conn, curr, uid):
 
     Inputs: 
         conn -- sqlite3.Connection
-        curr -- sqllite3.Connection
+        curr -- sqlite3.Connection
         uid -- uid of the selected post (str)
     '''
-    print('\n< Give Badge >')
+    bdate = str(date.today())
 
-    displayBadge(curr)
+    if not badgeAvailable(curr):
+        print(bcolor.errmsg("action failed: badge is not available now."))
 
-    valid = False
-    while not valid:
+    elif badgeGivenTdy(curr, uid, bdate):
+        print(bcolor.errmsg("action failed: this poster has already received a badge today."))
 
-        bdate = str(date.today())
-        bname = getValidBadge()
+    else:
+        print('\n< Give Badge >')
+        displayBadge(curr)
+        valid = False
+        while not valid:
 
-        # checks if entered bname exists in the database
-        curr.execute('SELECT * FROM badges WHERE bname = ? COLLATE NOCASE;',(bname,))
-        badgeRow = curr.fetchone()
-    
-        if badgeRow:
-            valid = checkValid('Do you want to give badge: "{}" to the poster? (y/n) '.format(badgeRow['bname']))
+            bname = getValidBadge()
+            badgeRow = getBadgeRow(curr, bname)
+        
+            if badgeRow: # entered bname exists
+                prompt = 'Do you want to give badge: "{}" to the poster? [y/n] '.format(badgeRow['bname'])
+                uin = page.getValidInput(prompt, ['y','n'])
 
-            # checks if the poster has already received a badge today
-            curr.execute('SELECT * FROM ubadges WHERE uid = ? and bdate = ?;',(uid, bdate))
-            badgeGivenTdy = curr.fetchone()
-
-            if not badgeGivenTdy: 
-                if valid:
-                    # inserts a new badge
+                if uin == 'y':
                     curr.execute('INSERT INTO ubadges VALUES (?, ?, ?)',(uid, bdate, badgeRow['bname']))
                     conn.commit()
-                    print('Badge awarded to the poster!')
+                    print(bcolor.green('\nBadge awarded to the poster!'))
+                    valid = True
+            
             else:
-                print("\nSorry! This poster has already received a badge today.")
+                print(bcolor.errmsg('action failed: badge: "{}" is not available.'.format(bname)))
 
-        else:
-            print('\nSorry! badge: "{}" is not available.'.format(bname))
+            if not valid:
+                prompt = 'Do you still want to give a badge? [y/n] '
+                valid = not page.continueAction(prompt)
 
-        if not valid:
-            valid = not checkValid('Do you still want to give a badge? (y/n) ')
+
+def badgeGivenTdy(curr, uid, bdate):
+    '''
+    Checks if a badge is already given to the poster today
+
+    Inputs:
+        curr -- sqlite3.Connection
+        uid --- str
+        bdate -- date
+    '''
+    curr.execute('SELECT * FROM ubadges WHERE uid = ? and bdate = ?;',(uid, bdate))
+    return True if curr.fetchone() else False
+
+
+def badgeAvailable(curr):
+    '''
+    Checks if a badge is available in the database
+
+    Input: curr -- sqlite3.Connection
+    '''
+    curr.execute('SELECT * FROM badges;')
+    return True if curr.fetchone() else False
+
+
+def getBadgeRow(curr, bname):
+    '''
+    Gets a row of the badge table that includes the same bname entered
+
+    Inputs:
+        curr -- sqlite3.Connection
+        bname -- str
+    Returns: 
+        curr.fetchone() -- sqlite3.Row
+    '''
+    curr.execute('SELECT * FROM badges WHERE bname = ? COLLATE NOCASE;',(bname,))
+    return curr.fetchone()
 
 
 def displayBadge(curr):
+    '''
+    Displays the badges available in the database
+
+    Input: curr -- sqlite3.Connection
+    '''
     print('\nAvailable badges:')
     curr.execute("SELECT type, bname FROM badges ORDER BY type;")
 
     frame = '+'+'-'*10+'+'+'-'*25+'+'
     print(frame)
-    print('|{:^10}|{:^25}|'.format('< type >','< badge name >'))
+    print('|{:^10}|{:^25}|'.format('type','badge name'))
     print(frame)
     for aBadge in curr.fetchall():
         print('|{:^10}|{:^25}|'.format(aBadge['type'],aBadge['bname']))
@@ -89,6 +131,9 @@ def displayBadge(curr):
 
 
 def getValidBadge():
+    '''
+    Prompts the user for a valid badge name
+    '''
     validBadge = False
     while not validBadge:
         bname = input('\nEnter a badge name to give from the list above: ')
