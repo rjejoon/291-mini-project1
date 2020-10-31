@@ -8,7 +8,9 @@ ENDC = '\033[0m'
 BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
 
+# underlined [a-z]
 u_lalphas = [UNDERLINE + chr(i) + ENDC for i in range(97, 97+26)]
+# underlined [A-Z]
 u_ualphas = [UNDERLINE + chr(i) + ENDC for i in range(65, 65+26)] 
 
 def errmsg(s):

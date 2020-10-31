@@ -196,7 +196,7 @@ insert into badges values ('great answer', 'silver');
 insert into badges values ('good question', 'bronze');
 insert into badges values ('good answer', 'bronze');
 
---- TEST CASE FOR MARK ANSWER ---
+-------------------------------TEST CASE FOR MARK ANSWER-------------------------------
 insert into posts values ('p009', date('now'), 'Testing for mark answer?', 'a001 is a default accepted answer', 'rjej');
 insert into questions values ('p009', null);
 

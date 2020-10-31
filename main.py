@@ -25,15 +25,14 @@ def main(argv):
         while run:
             page.printFirstScreen() 
 
-            prompt = "Enter a command: "
-            opt = page.getValidInput(prompt, ['si', 'su', 'q'])
+            opt = page.getValidInput('Enter a command: ', ['si', 'su', 'q'])
             if opt == 'si':
                 uid = page.signIn(conn, curr)
                 os.system('clear')
                 if uid != None:
                     page.mainMenu(conn, curr, uid)
             elif opt == 'su':
-                uid = page.signUp(conn, curr)
+                page.signUp(conn, curr)
                 # TODO do we need to re-sign in ?
             else:
                 run = False
@@ -52,10 +51,7 @@ def main(argv):
 
 def initConnAndCurrFrom(db):
     '''
-    Make a connection and cursur from a specified database.
-
-    Keyword arguments:
-    db —- database file 
+    Return a connection and cursor from the given database.
     '''
     dir_path = os.path.abspath(os.path.dirname(__file__)) + os.sep
     db_path = dir_path + db 
@@ -68,9 +64,13 @@ def initConnAndCurrFrom(db):
 
 
 def getDBFrom(argv):
+    '''
+    Return the db file name from sys.argv.
+    Assumes the db file exists in the current file.
+    '''
 
     if len(argv) != 2:
-        print("Usage: python3 main.py [file]") 
+        print(bcolor.errmsg("Usage: python3 main.py [file]"))
         sys.exit(2)
     
     return argv[1]
@@ -80,10 +80,8 @@ def tempTestData(curr, filename):
     sqlFile = open(filename)
     sqlString = sqlFile.read()
     curr.executescript(sqlString)
-
-
+    sqlFile.close()
 
 
 if __name__ == "__main__":
-
     main(sys.argv)
