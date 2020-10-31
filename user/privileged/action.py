@@ -153,47 +153,52 @@ def addTag(conn, curr, pid):
     '''
     print('\n< Add Tags >')
 
-    currentTags = findCurrentTag(curr, pid)
-    if len(currentTags) == 0:
-        print('\nThere is no tag on this post yet.')
-    else:
-        csuffix = genSuffix(currentTags)
-        print("\nCurrent Tag{}: {}".format(csuffix, ', '.join(currentTags)))
-
+    currentTags = getCurrentTag(curr, pid)
+    displayCurrentTag(currentTags)
+    
     valid = False
     while not valid:
 
-        # gets new tags
         newTags = getValidTag()
         numNewTags = len(newTags)
 
-        # checks the duplicates
-        duplicates, nonDuplicates = findMatchingTag(currentTags, newTags)
+        duplicates, nonDuplicates = getDuplicateTag(currentTags, newTags)
         numDup = len(duplicates)
         dsuffix = genSuffix(duplicates)
         
         tagsToAdd = True
         if numDup > 0:
-            print('\nThe post already has the following tag{}: {}'.format(dsuffix, ', '.join(duplicates)))
+            print(bcolor.errmsg('the post already has the following tag{}: {}'.format(dsuffix, ', '.join(duplicates))))
             
             if numNewTags == numDup: # user enters duplicates only
                 tagsToAdd = False
-                valid = not checkValid('Do you want to add another tag to the post? (y/n) ')
+                prompt = 'Do you want to add another tag to the post? [y/n] '
+                valid = not page.continueAction(prompt)
             else:
                 newTags = nonDuplicates
         
         nsuffix = genSuffix(newTags)
         if tagsToAdd:
-            valid = checkValid('\nDo you want to add: "{}" ? (y/n) '.format('", "'.join(newTags)))
-
-            if valid:
+            prompt = 'Do you want to add: "{}" ? [y/n] '.format('", "'.join(newTags))
+            uin = page.getValidInput(prompt, ['y','n'])
+            
+            if uin == 'y':
+                valid = True
                 insertTag(conn, curr, pid, newTags)
-                print("Tag{} added!".format(nsuffix))
+                print(bcolor.green("\nTag{} added!".format(nsuffix)))
             else:
-                valid = not checkValid('Do you still want to add tags to the post? (y/n) ')
+                prompt = 'Do you still want to add tags to the post? [y/n] '
+                valid = not page.continueAction(prompt)
 
 
-def findCurrentTag(curr, pid):
+def getCurrentTag(curr, pid):
+    '''
+    Gets the current tags that the post has
+
+    Inputs: 
+        curr -- sqllite3.Connection
+        pid -- pid of the selected post (str)
+    '''
     curr.execute("SELECT tag FROM tags WHERE pid = ?;", (pid,))
     currentTags = []
     for i in curr.fetchall():
@@ -201,7 +206,27 @@ def findCurrentTag(curr, pid):
     return currentTags
 
 
-def findMatchingTag(currentTags, newTags):
+def displayCurrentTag(currentTags):
+    '''
+    Displays the current tags
+
+    Input: currentTags -- list
+    '''
+    if len(currentTags) == 0:
+        print('\nThere is no tag on this post yet.')
+    else:
+        csuffix = genSuffix(currentTags)
+        print("\nCurrent Tag{}: {}".format(csuffix, ', '.join(currentTags)))
+
+
+def getDuplicateTag(currentTags, newTags):
+    '''
+    Gets the duplicated tags in currentTags and newTags
+
+    Inputs:
+        currentTags -- list
+        newTags -- list of tags entered
+    '''
     duplicates = []
     nonDuplicates = []
     lst = [x.lower() for x in currentTags]
@@ -214,6 +239,9 @@ def findMatchingTag(currentTags, newTags):
 
 
 def getValidTag():
+    '''
+    Gets the valid tags and Returns a list
+    '''
     validTag = False
     while not validTag:
         newTags = input('\nEnter tags to add, each separated by a comma: ')
@@ -224,12 +252,26 @@ def getValidTag():
 
 
 def insertTag(conn, curr, pid, newTags):
+    '''
+    Inserts the valid tags in newTags
+
+    Inputs: 
+        conn -- sqlite3.Connection
+        curr -- sqlite3.Connection
+        pid -- str
+        newTags -- list
+    '''
     for tag in newTags:
         curr.execute('INSERT INTO tags VALUES (?, ?)',(pid, tag))
         conn.commit()
 
 
 def genSuffix(lst):
+    '''
+    Gets a suffix depending on the subject (lst)
+    
+    Input: lst -- list
+    '''
     return 's' if len(lst) > 1 else ''
 
 
@@ -264,7 +306,6 @@ def edit(conn, curr, pid):
     conn.commit()
 
     print("Change complete!")
-
 
 
 def change(oldTitle, oldBody):
