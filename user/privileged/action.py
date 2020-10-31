@@ -63,7 +63,7 @@ def giveBadge(conn, curr, uid):
                 if uin == 'y':
                     curr.execute('INSERT INTO ubadges VALUES (?, ?, ?)',(uid, bdate, badgeRow['bname']))
                     conn.commit()
-                    print(bcolor.green('\nBadge awarded to the poster!'))
+                    print(bcolor.green('\nBadge Awarded to the poster!'))
                     valid = True
             
             else:
@@ -118,7 +118,7 @@ def addTag(conn, curr, pid):
             if uin == 'y':
                 valid = True
                 insertTag(conn, curr, pid, newTags)
-                print(bcolor.green("\nTag{} added!".format(nsuffix)))
+                print(bcolor.green("\nTag{} Added!".format(nsuffix)))
             else:
                 prompt = 'Do you still want to add tags to the post? [y/n] '
                 valid = not page.continueAction(prompt)
@@ -136,9 +136,9 @@ def edit(conn, curr, pid):
     curr.execute("SELECT title, body FROM posts WHERE pid=?", (pid, )) 
     currT, currB = curr.fetchone()
 
-    print("< Editing >")
+    print(bcolor.pink("\n< Editing >"))
     print("Press enter with nothing typed if you want to keep the content the same.")
-    print()
+
     confirmed = False
     while not confirmed:
         nTitle, nBody = change(currT, currB)
@@ -154,23 +154,20 @@ def edit(conn, curr, pid):
                         pid = ?;''', (nTitle, nBody, pid))
     conn.commit()
 
-    print("Change complete!")
+    print(bcolor.green("\nPost Edited!"))
 
 
 def change(oldTitle, oldBody):
-
-    print("You are currently editing:")
     print()
-    print("   Title: {}".format(oldTitle))
+    print(bcolor.cyan("You are currently editing:"))
+    print("\n   Title: {}".format(oldTitle))
+    print("\n   Body: {}".format(oldBody))
+    
     print()
     nTitle = input("Type a new title: ")
     if nTitle == '':
         nTitle = oldTitle
 
-    print()
-    print("You are currently editing:")
-    print()
-    print("   Body: {}".format(oldBody))
     print()
     nBody = input("Type a new Body: ") 
     if nBody == '':
@@ -181,7 +178,7 @@ def change(oldTitle, oldBody):
     
 def isChangeValid(nTitle, nBody):
 
-    print("Is this correct?")
+    print("\nIs the following information correct?")
     print("\n   Title: {}".format(nTitle))
     print("\n   Body: {}".format(nBody))
 
@@ -192,7 +189,7 @@ def isChangeValid(nTitle, nBody):
         elif check == 'n':
             return False
         else:
-            print("error: invalid command")
+            print(bcolor.errmsg("error: invalid command"))
 
 
 def changeAA(conn:sqlite3.Connection, curr, pid, aid):
@@ -206,7 +203,7 @@ def changeAA(conn:sqlite3.Connection, curr, pid, aid):
                                          'pid': pid})
     conn.commit()
 
-    print(bcolor.green("\nAccepted answer updated!"))
+    print(bcolor.green("\nAccepted Answer Updated!"))
 
 
 def badgeGivenTdy(curr, uid, bdate):

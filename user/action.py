@@ -27,7 +27,7 @@ def postQ(conn, curr, poster):
         conn.commit()
 
         print()
-        print(bcolor.green('Posting Complete!'))
+        print(bcolor.green('Posting Completed!'))
 
 
 def searchPosts(curr):
@@ -51,7 +51,7 @@ def postAns(conn, curr, poster, qid):
         poster -- uid of the current user (str)
         qid -- selected post (str)
     '''
-    print('\n< Post Answer >')
+    print(bcolor.pink('\n< Post Answer >'))
 
     infoList = getPInfo(curr) 
     if infoList:
@@ -64,7 +64,7 @@ def postAns(conn, curr, poster, qid):
         conn.commit()
 
         print()
-        print(bcolor.green('Posting Complete!'))
+        print(bcolor.green('Posting Completed!'))
 
 
 def castVote(conn, curr, pid, uid):
@@ -86,7 +86,7 @@ def castVote(conn, curr, pid, uid):
         # checks if the user has already voted for the selected post
         curr.execute('SELECT * FROM votes WHERE pid = ? and uid = ?',[pid, uid])
         if curr.fetchone():
-            print(bcolor.errmsg("error: you've already voted for this post."))
+            print(bcolor.errmsg("action failed: you've already voted for this post."))
         else:
             vdate = str(date.today())
             vno = getVno(curr)
@@ -95,7 +95,7 @@ def castVote(conn, curr, pid, uid):
             conn.commit()
 
             print()
-            print(bcolor.green('Voting Complete!'))
+            print(bcolor.green('Voting Completed!'))
 
 
 def displaySearchResult(resultTable, isPriv):

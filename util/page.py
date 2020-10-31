@@ -42,8 +42,8 @@ def mainMenu(conn, curr, uid):
                 
                 opt = actionOpts[act]
                 targetPost = resultTable[no]
-                targetUid = targetPost[4]
-                targetPid = targetPost[0]           # TODO row factory & use col name
+                targetUid = targetPost['poster']
+                targetPid = targetPost['pid']        
 
                 if opt == 1:
                     action.castVote(conn, curr, targetPid, uid)
