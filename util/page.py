@@ -165,7 +165,7 @@ def checkSignout():
     Checks if the user wants to sign out.
     '''
     so = getValidInput('Do you want to sign out? [y/n] ', ['y', 'n'])
-    if signout == 'y':
+    if so == 'y':
         return True
     return False
 
