@@ -164,12 +164,10 @@ def checkSignout():
     '''
     Checks if the user wants to sign out.
     '''
-    while True:
-        signout = input('Do you want to sign out? y/n ').lower()
-        if signout == 'y':
-            return True
-        elif signout == 'n':
-            return False
+    so = getValidInput('Do you want to sign out? [y/n] ', ['y', 'n'])
+    if signout == 'y':
+        return True
+    return False
 
 
 def getID(conn, curr):
