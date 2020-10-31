@@ -75,72 +75,6 @@ def giveBadge(conn, curr, uid):
                 valid = not page.continueAction(prompt)
 
 
-def badgeGivenTdy(curr, uid, bdate):
-    '''
-    Checks if a badge is already given to the poster today
-
-    Inputs:
-        curr -- sqlite3.Connection
-        uid --- str
-        bdate -- date
-    '''
-    curr.execute('SELECT * FROM ubadges WHERE uid = ? and bdate = ?;',(uid, bdate))
-    return True if curr.fetchone() else False
-
-
-def badgeAvailable(curr):
-    '''
-    Checks if a badge is available in the database
-
-    Input: curr -- sqlite3.Connection
-    '''
-    curr.execute('SELECT * FROM badges;')
-    return True if curr.fetchone() else False
-
-
-def getBadgeRow(curr, bname):
-    '''
-    Gets a row of the badge table that includes the same bname entered
-
-    Inputs:
-        curr -- sqlite3.Connection
-        bname -- str
-    Returns: 
-        curr.fetchone() -- sqlite3.Row
-    '''
-    curr.execute('SELECT * FROM badges WHERE bname = ? COLLATE NOCASE;',(bname,))
-    return curr.fetchone()
-
-
-def displayBadge(curr):
-    '''
-    Displays the badges available in the database
-
-    Input: curr -- sqlite3.Connection
-    '''
-    print('\nAvailable badges:')
-    curr.execute("SELECT type, bname FROM badges ORDER BY type;")
-
-    frame = '+'+'-'*10+'+'+'-'*25+'+'
-    print(frame)
-    print('|{:^10}|{:^25}|'.format('type','badge name'))
-    print(frame)
-    for aBadge in curr.fetchall():
-        print('|{:^10}|{:^25}|'.format(aBadge['type'],aBadge['bname']))
-        print(frame)
-
-
-def getValidBadge():
-    '''
-    Prompts the user for a valid badge name
-    '''
-    validBadge = False
-    while not validBadge:
-        bname = input('\nEnter a badge name to give from the list above: ')
-        if bname != '':
-            validBadge = True
-    return bname
-
 
 def addTag(conn, curr, pid):
     '''
@@ -189,90 +123,6 @@ def addTag(conn, curr, pid):
             else:
                 prompt = 'Do you still want to add tags to the post? [y/n] '
                 valid = not page.continueAction(prompt)
-
-
-def getCurrentTag(curr, pid):
-    '''
-    Gets the current tags that the post has
-
-    Inputs: 
-        curr -- sqllite3.Connection
-        pid -- pid of the selected post (str)
-    '''
-    curr.execute("SELECT tag FROM tags WHERE pid = ?;", (pid,))
-    currentTags = []
-    for i in curr.fetchall():
-        currentTags.append(i['tag']) 
-    return currentTags
-
-
-def displayCurrentTag(currentTags):
-    '''
-    Displays the current tags
-
-    Input: currentTags -- list
-    '''
-    if len(currentTags) == 0:
-        print('\nThere is no tag on this post yet.')
-    else:
-        csuffix = genSuffix(currentTags)
-        print("\nCurrent Tag{}: {}".format(csuffix, ', '.join(currentTags)))
-
-
-def getDuplicateTag(currentTags, newTags):
-    '''
-    Gets the duplicated tags in currentTags and newTags
-
-    Inputs:
-        currentTags -- list
-        newTags -- list of tags entered
-    '''
-    duplicates = []
-    nonDuplicates = []
-    lst = [x.lower() for x in currentTags]
-    for i in newTags:
-        if i.lower() in lst:
-            duplicates.append(i)
-        else:
-            nonDuplicates.append(i)
-    return duplicates, nonDuplicates
-
-
-def getValidTag():
-    '''
-    Gets the valid tags and Returns a list
-    '''
-    validTag = False
-    while not validTag:
-        newTags = input('\nEnter tags to add, each separated by a comma: ')
-        newTags = [x.strip() for x in newTags.split(',') if x.strip()]
-        if len(newTags) > 0:
-            validTag = True
-    return newTags
-
-
-def insertTag(conn, curr, pid, newTags):
-    '''
-    Inserts the valid tags in newTags
-
-    Inputs: 
-        conn -- sqlite3.Connection
-        curr -- sqlite3.Connection
-        pid -- str
-        newTags -- list
-    '''
-    for tag in newTags:
-        curr.execute('INSERT INTO tags VALUES (?, ?)',(pid, tag))
-        conn.commit()
-
-
-def genSuffix(lst):
-    '''
-    Gets a suffix depending on the subject (lst)
-    
-    Input: lst -- list
-    '''
-    return 's' if len(lst) > 1 else ''
 
 
 def edit(conn, curr, pid):
@@ -357,17 +207,153 @@ def changeAA(conn:sqlite3.Connection, curr, pid, aid):
                                          'pid': pid})
     conn.commit()
 
-    
-def checkValid(message):
+
+def badgeGivenTdy(curr, uid, bdate):
     '''
-    Confirms the user if the change is correct with a given message. 
-    Returns True if it is correct; False otherwise
-    
-    Input: message (str)
+    Checks if a badge is already given to the poster today
+
+    Inputs:
+        curr -- sqlite3.Connection
+        uid --- str
+        bdate -- date
     '''
-    while True:
-        checkValid = input(message).lower()
-        if checkValid == 'y':
-            return True
-        elif checkValid == 'n':
-            return False
+    curr.execute('SELECT * FROM ubadges WHERE uid = ? and bdate = ?;',(uid, bdate))
+    return True if curr.fetchone() else False
+
+
+def badgeAvailable(curr):
+    '''
+    Checks if a badge is available in the database
+
+    Input: curr -- sqlite3.Connection
+    '''
+    curr.execute('SELECT * FROM badges;')
+    return True if curr.fetchone() else False
+
+
+def getBadgeRow(curr, bname):
+    '''
+    Gets a row of the badge table that includes the same bname entered
+
+    Inputs:
+        curr -- sqlite3.Connection
+        bname -- str
+    Returns: 
+        curr.fetchone() -- sqlite3.Row
+    '''
+    curr.execute('SELECT * FROM badges WHERE bname = ? COLLATE NOCASE;',(bname,))
+    return curr.fetchone()
+
+
+def displayBadge(curr):
+    '''
+    Displays the badges available in the database
+
+    Input: curr -- sqlite3.Connection
+    '''
+    print('\nAvailable badges:')
+    curr.execute("SELECT type, bname FROM badges ORDER BY type;")
+
+    frame = '+'+'-'*10+'+'+'-'*25+'+'
+    print(frame)
+    print('|{:^10}|{:^25}|'.format('type','badge name'))
+    print(frame)
+    for aBadge in curr.fetchall():
+        print('|{:^10}|{:^25}|'.format(aBadge['type'],aBadge['bname']))
+        print(frame)
+
+
+def getValidBadge():
+    '''
+    Prompts the user for a valid badge name
+    '''
+    validBadge = False
+    while not validBadge:
+        bname = input('\nEnter a badge name to give from the list above: ').strip()
+        if bname != '':
+            validBadge = True
+    return bname
+
+
+def getCurrentTag(curr, pid):
+    '''
+    Gets the current tags that the post has
+
+    Inputs: 
+        curr -- sqllite3.Connection
+        pid -- pid of the selected post (str)
+    '''
+    curr.execute("SELECT tag FROM tags WHERE pid = ?;", (pid,))
+    currentTags = []
+    for i in curr.fetchall():
+        currentTags.append(i['tag']) 
+    return currentTags
+
+
+def displayCurrentTag(currentTags):
+    '''
+    Displays the current tags
+
+    Input: currentTags -- list
+    '''
+    if len(currentTags) == 0:
+        print('\nThere is no tag on this post yet.')
+    else:
+        csuffix = genSuffix(currentTags)
+        print("\nCurrent Tag{}: {}".format(csuffix, ', '.join(currentTags)))
+
+
+def getDuplicateTag(currentTags, newTags):
+    '''
+    Gets the duplicated tags in currentTags and newTags
+
+    Inputs:
+        currentTags -- list
+        newTags -- list of tags entered
+    '''
+    duplicates = []
+    nonDuplicates = []
+    lst = [x.lower() for x in currentTags]
+    for i in newTags:
+        if i.lower() in lst:
+            duplicates.append(i)
+        else:
+            nonDuplicates.append(i)
+    return duplicates, nonDuplicates
+
+
+def getValidTag():
+    '''
+    Gets the valid tags and Returns a list
+    '''
+    validTag = False
+    while not validTag:
+        newTags = input('\nEnter tags to add, each separated by a comma: ')
+        newTags = [x.strip() for x in newTags.split(',') if x.strip()]
+        if len(newTags) > 0:
+            validTag = True
+    return newTags
+
+
+def insertTag(conn, curr, pid, newTags):
+    '''
+    Inserts the valid tags in newTags
+
+    Inputs: 
+        conn -- sqlite3.Connection
+        curr -- sqlite3.Connection
+        pid -- str
+        newTags -- list
+    '''
+    for tag in newTags:
+        curr.execute('INSERT INTO tags VALUES (?, ?)',(pid, tag))
+        conn.commit()
+
+
+def genSuffix(lst):
+    '''
+    Gets a suffix depending on the subject (lst)
+    
+    Input: lst -- list
+    '''
+    return 's' if len(lst) > 1 else ''
