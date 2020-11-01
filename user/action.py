@@ -327,7 +327,7 @@ def genSearchQuery(keywords):
 
     tempSearchQuery = '''
                         SELECT 
-                            pid, 
+                            pid as pid2, 
                             numMatches,
                             ifnull(numVotes, 0) as numVotes,
                             numAns
@@ -341,7 +341,7 @@ def genSearchQuery(keywords):
 
     searchQuery = ''' 
                     SELECT
-                        p.pid,
+                        pid,
                         pdate,
                         title,
                         body,
@@ -353,7 +353,7 @@ def genSearchQuery(keywords):
                         posts p,
                         ({0}) as matches 
                     WHERE
-                        p.pid = matches.pid
+                        pid = pid2
                     ORDER BY 
                         matches.numMatches 
                     DESC;
