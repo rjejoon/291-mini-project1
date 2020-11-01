@@ -185,6 +185,7 @@ def getNewID(curr):
     input:
         curr -- sqlite3.Cursor
     '''
+    # TODO uid can only contain alphanumeric characters.
     valid = False
     uid = None
     while not valid: 
