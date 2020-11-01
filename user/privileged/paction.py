@@ -1,9 +1,13 @@
 import sqlite3
+
 from datetime import date
 from util import page
 from util import bcolor
 
 def markAnswer(conn, curr, aid):
+    '''
+
+    '''
 
     print(bcolor.pink('\n< Mark as Accepted Answer >'))
 
@@ -16,7 +20,7 @@ def markAnswer(conn, curr, aid):
     if uin == 'y':
 
         curr.execute("SELECT * FROM questions where pid=? and theaid IS NOT NULL;", (qid, ))
-        aaExists = True if curr.fetchone() else False # aa: accepted answer
+        aaExists = True if curr.fetchone() else False       # aa: accepted answer
             
         if aaExists:
             prompt = bcolor.warning("Warning: Accepted answer already exists. Proceed to change? [y/n] ")
