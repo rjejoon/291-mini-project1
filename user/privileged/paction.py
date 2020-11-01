@@ -5,30 +5,29 @@ from util import bcolor
 
 def markAnswer(conn, curr, aid):
 
-    curr.execute("SELECT pid FROM answers where pid=?;", (aid, ))
-    pid = curr.fetchone()[0]
+    print(bcolor.pink('\n< Mark as Accepted Answer >'))
 
-    curr.execute("SELECT theaid fROM questions where pid=?;", (pid, ))
-    # aa: accepted answer
-    aaExists = False if not curr.fetchone() else True
+    curr.execute("SELECT * FROM answers where pid=?;", (aid, ))
+    qid = curr.fetchone()['qid']
 
-    if aaExists:
-        prompt = "Warning: Accepted answer already exists! Proceed to change? y/n:"
-        valid = False
-        while not valid:
-            inp = input(prompt)
-            if valid == 'y':
-                valid = True
-                changeAA(conn, curr, pid, aid)
-            elif valid == 'n':
-                valid = True
+    prompt = 'Do you want to mark this post as an aceepted answer? [y/n] '
+    uin = page.getValidInput(prompt, ['y','n'])
+
+    if uin == 'y':
+
+        curr.execute("SELECT * FROM questions where pid=? and theaid IS NOT NULL;", (qid, ))
+        aaExists = True if curr.fetchone() else False # aa: accepted answer
+            
+        if aaExists:
+            prompt = bcolor.warning("Warning: Accepted answer already exists. Proceed to change? [y/n] ")
+            uin = page.getValidInput(prompt, ['y','n'])
+            if uin == 'y':
+                changeAA(conn, curr, qid, aid)
             else:
-                print("error: invalid command")
+                print(bcolor.green('\nAccepted answer was not updated.'))
     
-    else:
-        changeAA(conn, curr, pid, aid)
-
-    print("Accepted answer successfully updated!")
+        else:
+            changeAA(conn, curr, qid, aid)
             
 
 def giveBadge(conn, curr, uid):
@@ -49,7 +48,7 @@ def giveBadge(conn, curr, uid):
         print(bcolor.errmsg("action failed: this poster has already received a badge today."))
 
     else:
-        print('\n< Give Badge >')
+        print(bcolor.pink('\n< Give Badge >'))
         displayBadge(curr)
         valid = False
         while not valid:
@@ -64,7 +63,7 @@ def giveBadge(conn, curr, uid):
                 if uin == 'y':
                     curr.execute('INSERT INTO ubadges VALUES (?, ?, ?)',(uid, bdate, badgeRow['bname']))
                     conn.commit()
-                    print(bcolor.green('\nBadge awarded to the poster!'))
+                    print(bcolor.green('\nBadge Awarded to the poster!'))
                     valid = True
             
             else:
@@ -85,7 +84,7 @@ def addTag(conn, curr, pid):
         curr -- sqllite3.Connection
         pid -- pid of the selected post (str)
     '''
-    print('\n< Add Tags >')
+    print(bcolor.pink('\n< Add Tags >'))
 
     currentTags = getCurrentTag(curr, pid)
     displayCurrentTag(currentTags)
@@ -119,7 +118,7 @@ def addTag(conn, curr, pid):
             if uin == 'y':
                 valid = True
                 insertTag(conn, curr, pid, newTags)
-                print(bcolor.green("\nTag{} added!".format(nsuffix)))
+                print(bcolor.green("\nTag{} Added!".format(nsuffix)))
             else:
                 prompt = 'Do you still want to add tags to the post? [y/n] '
                 valid = not page.continueAction(prompt)
@@ -137,9 +136,9 @@ def edit(conn, curr, pid):
     curr.execute("SELECT title, body FROM posts WHERE pid=?", (pid, )) 
     currT, currB = curr.fetchone()
 
-    print("< Editing >")
+    print(bcolor.pink("\n< Editing >"))
     print("Press enter with nothing typed if you want to keep the content the same.")
-    print()
+
     confirmed = False
     while not confirmed:
         nTitle, nBody = change(currT, currB)
@@ -155,23 +154,20 @@ def edit(conn, curr, pid):
                         pid = ?;''', (nTitle, nBody, pid))
     conn.commit()
 
-    print("Change complete!")
+    print(bcolor.green("\nPost Edited!"))
 
 
 def change(oldTitle, oldBody):
-
-    print("You are currently editing:")
     print()
-    print("   Title: {}".format(oldTitle))
+    print(bcolor.cyan("You are currently editing:"))
+    print("\n   Title: {}".format(oldTitle))
+    print("\n   Body: {}".format(oldBody))
+    
     print()
     nTitle = input("Type a new title: ")
     if nTitle == '':
         nTitle = oldTitle
 
-    print()
-    print("You are currently editing:")
-    print()
-    print("   Body: {}".format(oldBody))
     print()
     nBody = input("Type a new Body: ") 
     if nBody == '':
@@ -182,7 +178,7 @@ def change(oldTitle, oldBody):
     
 def isChangeValid(nTitle, nBody):
 
-    print("Is this correct?")
+    print("\nIs the following information correct?")
     print("\n   Title: {}".format(nTitle))
     print("\n   Body: {}".format(nBody))
 
@@ -193,7 +189,7 @@ def isChangeValid(nTitle, nBody):
         elif check == 'n':
             return False
         else:
-            print("error: invalid command")
+            print(bcolor.errmsg("error: invalid command"))
 
 
 def changeAA(conn:sqlite3.Connection, curr, pid, aid):
@@ -206,6 +202,8 @@ def changeAA(conn:sqlite3.Connection, curr, pid, aid):
                         pid = :pid;''', {'aid': aid, 
                                          'pid': pid})
     conn.commit()
+
+    print(bcolor.green("\nAccepted Answer Updated!"))
 
 
 def badgeGivenTdy(curr, uid, bdate):
@@ -297,10 +295,10 @@ def displayCurrentTag(currentTags):
     Input: currentTags -- list
     '''
     if len(currentTags) == 0:
-        print('\nThere is no tag on this post yet.')
+        print('There is no tag on this post yet.')
     else:
         csuffix = genSuffix(currentTags)
-        print("\nCurrent Tag{}: {}".format(csuffix, ', '.join(currentTags)))
+        print("Current Tag{}: {}".format(csuffix, ', '.join(currentTags)))
 
 
 def getDuplicateTag(currentTags, newTags):

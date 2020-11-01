@@ -29,7 +29,8 @@ def main(argv):
             if opt == 'si':
                 uid = page.signIn(conn, curr)
                 os.system('clear')
-                page.mainMenu(conn, curr, uid)
+                if uid != None:
+                    page.mainMenu(conn, curr, uid)
             elif opt == 'su':
                 page.signUp(conn, curr)
                 # TODO do we need to re-sign in ?
