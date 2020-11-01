@@ -17,7 +17,6 @@ def main(argv):
     '''
     db = getDBFrom(argv)
     conn, curr = initConnAndCurrFrom(db)
-    tempTestData(curr, 'testSchema.sql')
 
     try:
         os.system('clear')
@@ -74,13 +73,6 @@ def getDBFrom(argv):
         sys.exit(2)
     
     return argv[1]
-
-# TODO delete after testing
-def tempTestData(curr, filename):
-    sqlFile = open(filename)
-    sqlString = sqlFile.read()
-    curr.executescript(sqlString)
-    sqlFile.close()
 
 
 if __name__ == "__main__":
