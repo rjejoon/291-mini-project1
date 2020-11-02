@@ -291,7 +291,7 @@ def getValidInput(prompt, validEntries):
         i = input(prompt).lower()
         if i in validEntries:
             return i 
-        print(bcolor.errmsg("error: invalid command\n"))
+        print(bcolor.errmsg("error: invalid entry\n"))
 
 
 def getName(curr, uid):

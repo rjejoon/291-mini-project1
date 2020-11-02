@@ -6,7 +6,12 @@ from util import bcolor
 
 def markAnswer(conn, curr, aid):
     '''
+    Mark the selected answer post as accepted and update it into the database.
 
+    inputs:
+        conn -- sqlite3.Connection
+        curr -- sqlite3.Cursor
+        aid -- pid of answer post (str)
     '''
 
     print(bcolor.pink('\n< Mark as Accepted Answer >'))
@@ -14,7 +19,7 @@ def markAnswer(conn, curr, aid):
     curr.execute("SELECT * FROM answers where pid=?;", (aid, ))
     qid = curr.fetchone()['qid']
 
-    prompt = 'Do you want to mark this post as an aceepted answer? [y/n] '
+    prompt = 'Do you want to mark this post as an accepted answer? [y/n] '
     uin = page.getValidInput(prompt, ['y','n'])
 
     if uin == 'y':
@@ -27,11 +32,13 @@ def markAnswer(conn, curr, aid):
             uin = page.getValidInput(prompt, ['y','n'])
             if uin == 'y':
                 changeAA(conn, curr, qid, aid)
+                conn.commit()
             else:
-                print(bcolor.green('\nAccepted answer was not updated.'))
+                print('\nMarking answer is cancelled.')
     
         else:
             changeAA(conn, curr, qid, aid)
+            conn.commit()
             
 
 def giveBadge(conn, curr, uid):
