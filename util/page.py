@@ -84,7 +84,7 @@ def executeAction(conn, curr, act, uid, targetPid, targetPoster):
     elif opt == 5:
         paction.addTag(conn, curr, targetPid)
     elif opt == 6:
-        paction.edit(conn, curr, targetPid)
+        paction.editPost(conn, curr, targetPid)
 
 
 def signIn(conn, curr):
@@ -259,7 +259,7 @@ def checkValid(uid, name, city):
     return False
 
 
-def continueAction():
+def continueAction(prompt):
     '''
     Confirms the users if they still want to continue the current action.
     '''

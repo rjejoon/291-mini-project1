@@ -88,11 +88,11 @@ def giveBadge(conn, curr, uid):
 
 def addTag(conn, curr, pid):
     '''
-    Adds tags to the selected post
+    Add tags to the selected post.
 
     Inputs: 
         conn -- sqlite3.Connection
-        curr -- sqllite3.Connection
+        curr -- sqllite3.Cursor
         pid -- pid of the selected post (str)
     '''
     print(bcolor.pink('\n< Add Tags >'))
@@ -107,14 +107,14 @@ def addTag(conn, curr, pid):
         numNewTags = len(newTags)
 
         duplicates, nonDuplicates = getDuplicateTag(currentTags, newTags)
-        numDup = len(duplicates)
+        numDups = len(duplicates)
         dsuffix = genSuffix(duplicates)
         
         tagsToAdd = True
-        if numDup > 0:
+        if numDups > 0:
             print(bcolor.errmsg('the post already has the following tag{}: {}'.format(dsuffix, ', '.join(duplicates))))
             
-            if numNewTags == numDup: # user enters duplicates only
+            if numNewTags == numDups: # user enters duplicates only
                 tagsToAdd = False
                 prompt = 'Do you want to add another tag to the post? [y/n] '
                 valid = not page.continueAction(prompt)
@@ -135,9 +135,9 @@ def addTag(conn, curr, pid):
                 valid = not page.continueAction(prompt)
 
 
-def edit(conn, curr, pid):
+def editPost(conn, curr, pid):
     '''
-    Edit the selected post.
+    Edit the title and body of the selected post.
 
     inputs:
         conn: sqlite3.Connection
@@ -148,11 +148,10 @@ def edit(conn, curr, pid):
     currT, currB = curr.fetchone()
 
     print(bcolor.pink("\n< Editing >"))
-    print("Press enter with nothing typed if you want to keep the content the same.")
 
     confirmed = False
     while not confirmed:
-        nTitle, nBody = change(currT, currB)
+        nTitle, nBody = changeTitleAndBody(currT, currB)
         confirmed = isChangeValid(nTitle, nBody)
 
     curr.execute(''' 
@@ -168,19 +167,30 @@ def edit(conn, curr, pid):
     print(bcolor.green("\nPost Edited!"))
 
 
-def change(oldTitle, oldBody):
+def changeTitleAndBody(oldTitle, oldBody):
+    '''
+    Prompt the user for a new title and new body.
+
+    Inputs:
+        oldTitle -- str
+        oldBody -- str
+    Return:
+        nTitle -- str
+        nBody -- str
+    '''
+    print("Press enter with nothing typed if you want to keep the content the same.")
     print()
     print(bcolor.cyan("You are currently editing:"))
     print("\n   Title: {}".format(oldTitle))
     print("\n   Body: {}".format(oldBody))
     
     print()
-    nTitle = input("Type a new title: ")
+    nTitle = input("Enter a new title: ")
     if nTitle == '':
         nTitle = oldTitle
 
     print()
-    nBody = input("Type a new Body: ") 
+    nBody = input("Enter a new body: ") 
     if nBody == '':
         nBody = oldBody
         
@@ -188,23 +198,37 @@ def change(oldTitle, oldBody):
 
     
 def isChangeValid(nTitle, nBody):
+    '''
+    Prompt the user to double check the new title and body, and return True if they are valid.
+
+    Inputs:
+        nTitle -- str
+        nBody -- str
+    Return: 
+        bool
+    '''
 
     print("\nIs the following information correct?")
     print("\n   Title: {}".format(nTitle))
     print("\n   Body: {}".format(nBody))
 
-    while True:
-        check = input("\nType 'y' if it is correct. Type 'n' if you want to start over: ")
-        if check == 'y':
-            return True
-        elif check == 'n':
-            return False
-        else:
-            print(bcolor.errmsg("error: invalid command"))
+    prompt = "\nType 'y' if it is correct. Type 'n' if you want to start over: "
+    check = page.getValidInput(prompt)
+    if check == 'n':
+        return False 
+    return True 
 
 
-def changeAA(conn:sqlite3.Connection, curr, pid, aid):
+def changeAA(conn, curr, pid, aid):
+    '''
+    Update the selected answer post as accepted to the database. 
 
+    inputs:
+        conn -- sqlite3.Connection
+        curr -- sqlite3.Cursor
+        pid -- str
+        aid -- str
+    '''
     curr.execute('''UPDATE 
                         questions
                     SET 
@@ -291,39 +315,43 @@ def getBadge():
 
 def getCurrentTag(curr, pid):
     '''
-    Gets the current tags that the post has
+    Return currently attached tags to the selected post.
 
     Inputs: 
-        curr -- sqllite3.Connection
+        curr -- sqllite3.Cursor
         pid -- pid of the selected post (str)
+    Return:
+        list
     '''
     curr.execute("SELECT tag FROM tags WHERE pid = ?;", (pid,))
-    currentTags = []
-    for i in curr.fetchall():
-        currentTags.append(i['tag']) 
-    return currentTags
+
+    return [r['tag'] for r in curr.fetchall()]
 
 
 def displayCurrentTag(currentTags):
     '''
-    Displays the current tags
+    Display the attached tags. 
 
     Input: currentTags -- list
     '''
     if len(currentTags) == 0:
-        print('There is no tag on this post yet.')
+        print('There is no tag attached to this post yet.')
     else:
-        csuffix = genSuffix(currentTags)
-        print("Current Tag{}: {}".format(csuffix, ', '.join(currentTags)))
+        suffix = genSuffix(currentTags)
+        print("Current Tag{}: {}".format(suffix, ', '.join(currentTags)))
 
 
 def getDuplicateTag(currentTags, newTags):
     '''
-    Gets the duplicated tags in currentTags and newTags
+    Classify the currently attached tags and the new tags entered by the user.
+    into duplicated and non-duplicate tags and return them.
 
     Inputs:
         currentTags -- list
         newTags -- list of tags entered
+    Returns:
+        duplicates -- list
+        nonDuplicates -- list
     '''
     duplicates = []
     nonDuplicates = []
@@ -338,7 +366,10 @@ def getDuplicateTag(currentTags, newTags):
 
 def getValidTag():
     '''
-    Gets the valid tags and Returns a list
+    Prompt the user for tags and return them.
+
+    Return:
+        newTags -- list
     '''
     validTag = False
     while not validTag:
@@ -346,28 +377,28 @@ def getValidTag():
         newTags = [x.strip() for x in newTags.split(',') if x.strip()]
         if len(newTags) > 0:
             validTag = True
+        else:
+            print(bcolor.errmsg('error: tag name cannot be empty'))
     return newTags
 
 
 def insertTag(conn, curr, pid, newTags):
     '''
-    Inserts the valid tags in newTags
+    Insert the new tags into the database. 
 
     Inputs: 
         conn -- sqlite3.Connection
-        curr -- sqlite3.Connection
+        curr -- sqlite3.Cursor
         pid -- str
         newTags -- list
     '''
     for tag in newTags:
-        curr.execute('INSERT INTO tags VALUES (?, ?)',(pid, tag))
-        conn.commit()
+        curr.execute('INSERT INTO tags VALUES (?, ?)', (pid, tag))
+    conn.commit()
 
 
-def genSuffix(lst):
+def genSuffix(l):
     '''
-    Gets a suffix depending on the subject (lst)
-    
-    Input: lst -- list
+    Return an appropriate suffix depending on the number of elements in the list.
     '''
-    return 's' if len(lst) > 1 else ''
+    return 's' if len(l) > 1 else ''
