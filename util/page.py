@@ -34,7 +34,6 @@ def mainMenu(conn, curr, uid):
             if len(resultTable) > 0:
                 no, act = action.displaySearchResult(resultTable, isPriv)
                 targetPost = resultTable[no]
-                print(dict(targetPost))
                 targetPoster = targetPost['poster']
                 targetPid = targetPost['pid']
                 executeAction(conn, curr, act, uid, targetPid, targetPoster)
@@ -260,7 +259,7 @@ def checkValid(uid, name, city):
     return False
 
 
-def continueAction(prompt):
+def continueAction():
     '''
     Confirms the users if they still want to continue the current action.
     '''

@@ -7,6 +7,7 @@ from util import bcolor
 def markAnswer(conn, curr, aid):
     '''
     Mark the selected answer post as accepted and update it into the database.
+    Prompts the user whether to overwrite if an accepted answer already exists.
 
     inputs:
         conn -- sqlite3.Connection
@@ -43,31 +44,31 @@ def markAnswer(conn, curr, aid):
 
 def giveBadge(conn, curr, uid):
     '''
-    Gives a badge to the poster of the selected post
+    Gives a badge to the poster of the selected post.
 
     Inputs: 
         conn -- sqlite3.Connection
-        curr -- sqlite3.Connection
-        uid -- uid of the selected post (str)
+        curr -- sqlite3.Cursor
+        uid -- poster of the selected post (str)
     '''
     bdate = str(date.today())
 
     if not badgeAvailable(curr):
         print(bcolor.errmsg("action failed: badge is not available now."))
 
-    elif badgeGivenTdy(curr, uid, bdate):
+    elif isBadgeGivenTdy(curr, uid, bdate):
         print(bcolor.errmsg("action failed: this poster has already received a badge today."))
 
     else:
         print(bcolor.pink('\n< Give Badge >'))
-        displayBadge(curr)
+        displayAvailBadges(curr)
         valid = False
         while not valid:
 
-            bname = getValidBadge()
+            bname = getBadge()
             badgeRow = getBadgeRow(curr, bname)
         
-            if badgeRow: # entered bname exists
+            if badgeRow:    # badge already exists
                 prompt = 'Do you want to give badge: "{}" to the poster? [y/n] '.format(badgeRow['bname'])
                 uin = page.getValidInput(prompt, ['y','n'])
 
@@ -83,7 +84,6 @@ def giveBadge(conn, curr, uid):
             if not valid:
                 prompt = 'Do you still want to give a badge? [y/n] '
                 valid = not page.continueAction(prompt)
-
 
 
 def addTag(conn, curr, pid):
@@ -217,9 +217,9 @@ def changeAA(conn:sqlite3.Connection, curr, pid, aid):
     print(bcolor.green("\nAccepted Answer Updated!"))
 
 
-def badgeGivenTdy(curr, uid, bdate):
+def isBadgeGivenTdy(curr, uid, bdate):
     '''
-    Checks if a badge is already given to the poster today
+    Return True if a badge is already given to the poster today.
 
     Inputs:
         curr -- sqlite3.Connection
@@ -232,7 +232,7 @@ def badgeGivenTdy(curr, uid, bdate):
 
 def badgeAvailable(curr):
     '''
-    Checks if a badge is available in the database
+    Return True if there is at least one badge in the database.
 
     Input: curr -- sqlite3.Connection
     '''
@@ -242,23 +242,23 @@ def badgeAvailable(curr):
 
 def getBadgeRow(curr, bname):
     '''
-    Gets a row of the badge table that includes the same bname entered
+    Return a row of the badge table that includes the same bname entered.
 
     Inputs:
         curr -- sqlite3.Connection
         bname -- str
     Returns: 
-        curr.fetchone() -- sqlite3.Row
+        sqlite3.Row
     '''
     curr.execute('SELECT * FROM badges WHERE bname = ? COLLATE NOCASE;',(bname,))
     return curr.fetchone()
 
 
-def displayBadge(curr):
+def displayAvailBadges(curr):
     '''
-    Displays the badges available in the database
+    Displays the badges available in the database.
 
-    Input: curr -- sqlite3.Connection
+    Input: curr -- sqlite3.Cursor
     '''
     print('\nAvailable badges:')
     curr.execute("SELECT type, bname FROM badges ORDER BY type;")
@@ -272,15 +272,20 @@ def displayBadge(curr):
         print(frame)
 
 
-def getValidBadge():
+def getBadge():
     '''
-    Prompts the user for a valid badge name
+    Prompt the user for a badge name.
+
+    Return:
+        bname -- str
     '''
     validBadge = False
     while not validBadge:
         bname = input('\nEnter a badge name to give from the list above: ').strip()
         if bname != '':
             validBadge = True
+        else:
+            print(bcolor.errmsg('error: badge name cannot be empty.'))
     return bname
 
 

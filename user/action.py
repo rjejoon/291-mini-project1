@@ -202,7 +202,7 @@ def getAction(isQues, isPriv):
     '''  
     actionDict = availableActions(isQues, isPriv)
 
-    print("Choose an option to :\n")
+    print("Choose an option to:\n")
     for cmd, action in actionDict.items():
         print("   {0}: {1}".format(bcolor.bold(cmd), action))
     print()
