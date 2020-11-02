@@ -517,7 +517,7 @@ def getPInfo(curr):
 
 def genPid(curr):
     '''
-    Generate a new unique pid and return t.
+    Return a new unique pid.
 
     Input: 
         curr -- sqllite3.Connection
@@ -530,11 +530,10 @@ def genPid(curr):
     if not pid_n:     # no posts in db
         return 'p001'
 
-    isUnique = False
-    while not isUnique:
-        pid = 'p{:03}'.format(pid_n)    # format: 'pxxx'
-        isUnique = isPidUnique(curr, pid)
+    pid = 'p{:03}'.format(pid_n)    # format: 'pxxx'
+    while not isPidUnique(curr, pid):
         pid_n += 1
+        pid = 'p{:03}'.format(pid_n)    
 
     return pid
 
