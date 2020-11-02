@@ -185,6 +185,7 @@ def changeTitleAndBody(oldTitle, oldBody):
     
     print()
     print("Press enter with nothing typed if you want to keep the content the same.")
+    print()
     nTitle = input("Enter a new title: ")
     if nTitle == '':
         nTitle = oldTitle
