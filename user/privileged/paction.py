@@ -178,13 +178,13 @@ def changeTitleAndBody(oldTitle, oldBody):
         nTitle -- str
         nBody -- str
     '''
-    print("Press enter with nothing typed if you want to keep the content the same.")
     print()
     print(bcolor.cyan("You are currently editing:"))
     print("\n   Title: {}".format(oldTitle))
     print("\n   Body: {}".format(oldBody))
     
     print()
+    print("Press enter with nothing typed if you want to keep the content the same.")
     nTitle = input("Enter a new title: ")
     if nTitle == '':
         nTitle = oldTitle
@@ -213,7 +213,7 @@ def isChangeValid(nTitle, nBody):
     print("\n   Body: {}".format(nBody))
 
     prompt = "\nType 'y' if it is correct. Type 'n' if you want to start over: "
-    check = page.getValidInput(prompt)
+    check = page.getValidInput(prompt, ['y', 'n'])
     if check == 'n':
         return False 
     return True 
