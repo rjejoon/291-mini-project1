@@ -13,7 +13,7 @@ def main(argv):
 
     Error codes:
         0: Success
-        2: invalid command line argument
+        1: invalid command line argument
     '''
     db = getDBFrom(argv)
     conn, curr = initConnAndCurrFrom(db)
@@ -32,14 +32,13 @@ def main(argv):
                     page.mainMenu(conn, curr, uid)
             elif opt == 'su':
                 page.signUp(conn, curr)
-                # TODO do we need to re-sign in ?
             else:
                 run = False
         sys.exit(0)
 
     except SystemExit as e:
         if int(str(e)) > 0:
-            print(traceback.format_exc())   # TODO change to simple error messeage
+            print(traceback.format_exc())   
     except Exception as e:
         print(traceback.format_exc())
     finally:
@@ -65,15 +64,17 @@ def initConnAndCurrFrom(db):
 def getDBFrom(argv):
     '''
     Return the db file name from sys.argv.
-    Assumes the db file exists in the current file.
+    Assumes the db file exists in the same file.
     '''
 
     if len(argv) != 2:
         print(bcolor.errmsg("Usage: python3 main.py [file]"))
-        sys.exit(2)
+        sys.exit(1)
     
     return argv[1]
 
 
 if __name__ == "__main__":
     main(sys.argv)
+
+

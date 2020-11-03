@@ -69,9 +69,9 @@ def postAns(conn, curr, poster, qid):
     if infoList:
         infoList.append(poster) # infoList = [pid, pdate, title, body, poster]
 
-        curr.execute('INSERT INTO posts VALUES (?, ?, ?, ?, ?)', infoList)
+        curr.execute('INSERT INTO posts VALUES (?, ?, ?, ?, ?);', infoList)
 
-        curr.execute('INSERT INTO answers VALUES (?, ?)', [infoList[0], qid])
+        curr.execute('INSERT INTO answers VALUES (?, ?);', [infoList[0], qid])
 
         conn.commit()
 
@@ -104,7 +104,7 @@ def castVote(conn, curr, pid, uid):
             vdate = str(date.today())
             vno = getVno(curr)
             
-            curr.execute('INSERT INTO votes VALUES (?, ?, ?, ?)', [pid, vno, vdate, uid])
+            curr.execute('INSERT INTO votes VALUES (?, ?, ?, ?);', [pid, vno, vdate, uid])
             conn.commit()
 
             print()

@@ -142,7 +142,7 @@ def signUp(conn, curr):
         if checkValid(uid, name, city):
             valid = True
         else:
-            cont = getValidInput('Do you still want to continue signing up? [y/n] ', ['y', 'n'])
+            cont = getValidInput('Do you still want toe sign up? [y/n] ', ['y', 'n'])
             if cont == 'n':
                 return 
 
