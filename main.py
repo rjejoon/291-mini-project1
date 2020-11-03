@@ -26,7 +26,7 @@ def main(argv):
 
             opt = page.getValidInput('Enter a command: ', ['si', 'su', 'q'])
             if opt == 'si':
-                uid = page.signIn(conn, curr)
+                uid = page.signIn(curr)
                 os.system('clear')
                 if uid != None:
                     page.mainMenu(conn, curr, uid)

@@ -318,7 +318,7 @@ def genSearchQuery(keywords):
     Columns: (pid, pdate, title, body, poster, numVotes, numAns, numMatches)
 
     input:
-        keywords -- list
+        keywords -- dict
     return:
         searchQuery -- str
     '''

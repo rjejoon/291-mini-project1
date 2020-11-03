@@ -90,12 +90,15 @@ def executeAction(conn, curr, act, uid, targetPid, targetPoster):
         os.system('clear')
 
 
-def signIn(conn, curr):
+def signIn(curr):
     '''
-    Prompt the user to enter their user ID and password. Checks if they exist in the database and Returns them.
+    Prompts the user to enter their user ID and password. Checks if they exist in the database. 
+    If not, it returns the user ID. 
 
-    Inputs: conn, curr
-    Returns: userID
+    Inputs: 
+        curr -- sqlite3.Cursor
+    Returns: 
+        str
     '''
     validInfo = False
     while not validInfo:
@@ -145,7 +148,7 @@ def signUp(conn, curr):
         if checkValid(uid, name, city):
             valid = True
         else:
-            cont = getValidInput('Do you still want toe sign up? [y/n] ', ['y', 'n'])
+            cont = getValidInput('Do you still want to sign up? [y/n] ', ['y', 'n'])
             if cont == 'n':
                 return 
 
