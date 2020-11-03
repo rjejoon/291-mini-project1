@@ -60,7 +60,7 @@ def giveBadge(conn, curr, uid):
         print(bcolor.errmsg("action failed: this poster has already received a badge today."))
 
     else:
-        print(bcolor.pink('\n< Give Badge >'))
+        print(bcolor.pink('\n< Give a Badge >'))
         displayAvailBadges(curr)
         valid = False
         while not valid:
@@ -147,7 +147,7 @@ def editPost(conn, curr, pid):
     curr.execute("SELECT title, body FROM posts WHERE pid=?;", (pid, )) 
     currT, currB = curr.fetchone()
 
-    print(bcolor.pink("\n< Editing >"))
+    print(bcolor.pink("\n< Edit Post >"))
 
     confirmed = False
     while not confirmed:

@@ -70,7 +70,8 @@ def executeAction(conn, curr, act, uid, targetPid, targetPoster):
                     'ma': 3,
                     'gb': 4,
                     't': 5,
-                    'ep': 6
+                    'ep': 6,
+                    'bm': 7
                             }
     opt = actionOpts[act]
     if opt == 1:
@@ -85,11 +86,13 @@ def executeAction(conn, curr, act, uid, targetPid, targetPoster):
         paction.addTag(conn, curr, targetPid)
     elif opt == 6:
         paction.editPost(conn, curr, targetPid)
+    elif opt == 7:
+        os.system('clear')
 
 
 def signIn(conn, curr):
     '''
-    Prompts the user to enter their user ID and password. Checks if they exist in the database and Returns them.
+    Prompt the user to enter their user ID and password. Checks if they exist in the database and Returns them.
 
     Inputs: conn, curr
     Returns: userID
@@ -169,7 +172,7 @@ def printFirstScreen():
 
 def checkSignout():
     '''
-    Checks if the user wants to sign out.
+    Check if the user wants to sign out.
     '''
     so = getValidInput('Do you want to sign out? [y/n] ', ['y', 'n'])
     if so == 'y':
@@ -179,26 +182,30 @@ def checkSignout():
 
 def getNewID(curr):
     '''
-    Gets an appropriate user id and returns it.
+    Get an appropriate user id and return it.
 
     input:
         curr -- sqlite3.Cursor
     '''
-    # TODO uid can only contain alphanumeric characters.
     valid = False
     uid = None
     while not valid: 
         if not uid: 
             uid = input("Enter your id: ")
-        if isUidUnique(curr, uid):
-            if len(uid) > 4:
-                prompt = bcolor.warning("Warning: maximum id length is 4. Use '{}' instead? [y/n] ".format(uid[:4]))
-                uin = getValidInput(prompt, ['y', 'n'])
-                uid = uid[:4] if uin == 'y' else None
+
+        if uid.isalnum():
+            if isUidUnique(curr, uid):
+                if len(uid) > 4:
+                    prompt = bcolor.warning("Warning: maximum id length is 4. Use '{}' instead? [y/n] ".format(uid[:4]))
+                    uin = getValidInput(prompt, ['y', 'n'])
+                    uid = uid[:4] if uin == 'y' else None
+                else:
+                    valid = True
             else:
-                valid = True
+                print(bcolor.errmsg("error: user id already taken."))
+                uid = None
         else:
-            print(bcolor.errmsg("error: user id already taken."))
+            print(bcolor.errmsg("error: password cannot contain any special characters.")) 
             uid = None
 
     return uid
@@ -216,7 +223,7 @@ def isUidUnique(curr, uid):
     if not curr.fetchone():
         return True
     return False
-    
+
 
 def getNewPassword():
     '''
@@ -261,7 +268,7 @@ def checkValid(uid, name, city):
 
 def continueAction(prompt):
     '''
-    Confirms the users if they still want to continue the current action.
+    Confirm the users if they still want to continue the current action.
     '''
     uin = getValidInput(prompt, ['y', 'n'])
     return True if uin == 'y' else False
@@ -279,7 +286,7 @@ def isPrivileged(curr, uid):
 
 def getValidInput(prompt, validEntries):
     '''
-    Prompts the user with the provided prompt.
+    Prompt the user with the provided prompt.
     If the user input is not in validEntries, print error.
 
     inputs:
