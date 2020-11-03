@@ -73,7 +73,7 @@ def giveBadge(conn, curr, uid):
                 uin = page.getValidInput(prompt, ['y','n'])
 
                 if uin == 'y':
-                    curr.execute('INSERT INTO ubadges VALUES (?, ?, ?)',(uid, bdate, badgeRow['bname']))
+                    curr.execute('INSERT INTO ubadges VALUES (?, ?, ?);',(uid, bdate, badgeRow['bname']))
                     conn.commit()
                     print(bcolor.green('\nBadge Awarded to the poster!'))
                     valid = True
@@ -112,7 +112,7 @@ def addTag(conn, curr, pid):
         
         tagsToAdd = True
         if numDups > 0:
-            print(bcolor.errmsg('the post already has the following tag{}: {}'.format(dsuffix, ', '.join(duplicates))))
+            print(bcolor.errmsg('error: post already has the following tag{}: {}'.format(dsuffix, ', '.join(duplicates))))
             
             if numNewTags == numDups: # user enters duplicates only
                 tagsToAdd = False
@@ -144,7 +144,7 @@ def editPost(conn, curr, pid):
         curr: sqlite3.Cursor
         pid: posts.pid
     '''
-    curr.execute("SELECT title, body FROM posts WHERE pid=?", (pid, )) 
+    curr.execute("SELECT title, body FROM posts WHERE pid=?;", (pid, )) 
     currT, currB = curr.fetchone()
 
     print(bcolor.pink("\n< Editing >"))
@@ -251,7 +251,7 @@ def isBadgeGivenTdy(curr, uid, bdate):
         uid --- str
         bdate -- date
     '''
-    curr.execute('SELECT * FROM ubadges WHERE uid = ? and bdate = ?;',(uid, bdate))
+    curr.execute("SELECT * FROM ubadges WHERE uid = ? and bdate = ?;",(uid, bdate))
     return True if curr.fetchone() else False
 
 
@@ -261,7 +261,7 @@ def badgeAvailable(curr):
 
     Input: curr -- sqlite3.Connection
     '''
-    curr.execute('SELECT * FROM badges;')
+    curr.execute("SELECT * FROM badges;")
     return True if curr.fetchone() else False
 
 
@@ -275,7 +275,7 @@ def getBadgeRow(curr, bname):
     Returns: 
         sqlite3.Row
     '''
-    curr.execute('SELECT * FROM badges WHERE bname = ? COLLATE NOCASE;',(bname,))
+    curr.execute("SELECT * FROM badges WHERE bname = ? COLLATE NOCASE;",(bname,))
     return curr.fetchone()
 
 
@@ -394,7 +394,7 @@ def insertTag(conn, curr, pid, newTags):
         newTags -- list
     '''
     for tag in newTags:
-        curr.execute('INSERT INTO tags VALUES (?, ?)', (pid, tag))
+        curr.execute("INSERT INTO tags VALUES (?, ?);", (pid, tag))
     conn.commit()
 
 
@@ -403,3 +403,6 @@ def genSuffix(l):
     Return an appropriate suffix depending on the number of elements in the list.
     '''
     return 's' if len(l) > 1 else ''
+
+
+
