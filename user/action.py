@@ -19,7 +19,7 @@ def postQ(conn, curr, poster):
         curr -- sqllite3.Cursor
         poster -- uid of the signed in user (str)
     '''
-    print('\n' + bcolor.pink('< Post Question >'))
+    print('\n' + bcolor.pink('< Post a Question >'))
     infoList = getPInfo(curr)
     if infoList:
         infoList.append(poster) # infoList = [pid, pdate, title, body, poster]
@@ -63,7 +63,7 @@ def postAns(conn, curr, poster, qid):
         qid -- selected post (str)
     '''
     print()
-    print(bcolor.pink('< Post Answer >'))
+    print(bcolor.pink('< Write an Answer >'))
 
     infoList = getPInfo(curr) 
     if infoList:
@@ -89,7 +89,7 @@ def castVote(conn, curr, pid, uid):
         pid -- selected post (str)
         uid -- uid of the current user (str)
     '''
-    print('\n' + bcolor.pink('< Cast Vote >'))
+    print('\n' + bcolor.pink('< Vote on the Post >'))
 
     prompt = 'Do you want to vote on this post? [y/n] '
     confirm = page.getValidInput(prompt, ['y', 'n'])
@@ -232,7 +232,7 @@ def availableActions(isQues, isPriv):
 
     privActionDict = OrderedDict()
     privActionDict['gb'] = '{}ive a {}adge'.format(bcolor.u_ualphas[6], bcolor.u_lalphas[1])
-    privActionDict['t'] = 'Add a {}ag'.format(bcolor.u_lalphas[19])
+    privActionDict['t'] = 'Add {}ags'.format(bcolor.u_lalphas[19])
     privActionDict['ep'] = '{}dit {}ost'.format(bcolor.u_ualphas[4], bcolor.u_lalphas[15])
 
     privAnsActionDict = OrderedDict()
@@ -244,6 +244,8 @@ def availableActions(isQues, isPriv):
         privActionDict.update(privAnsActionDict)
     if isPriv:
         actionDict.update(privActionDict)
+
+    actionDict['bm'] = '{}ack to {}enu'.format(bcolor.u_ualphas[1], bcolor.u_lalphas[12])
 
     return actionDict
 
