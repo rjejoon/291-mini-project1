@@ -52,8 +52,6 @@ def searchPosts(curr, isPriv):
 
     curr.execute(searchQuery, keywords)
     resultTable = curr.fetchall()
-    for row in resultTable:
-        print(row['numMatches'])
 
     targetPost = []
     act = ''
