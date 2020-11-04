@@ -47,10 +47,13 @@ def searchPosts(curr, isPriv):
         act -- str
     '''
     keywords = getKeywords()
+
     searchQuery = genSearchQuery(keywords)
 
     curr.execute(searchQuery, keywords)
     resultTable = curr.fetchall()
+    for row in resultTable:
+        print(row['numMatches'])
 
     targetPost = []
     act = ''
@@ -193,9 +196,16 @@ def getKeywords():
     print(bcolor.pink('< Search Posts >'))
 
     prompt = "Enter keywords to search, each separated by a comma: "
-    keywords = input(prompt).lower().split(',')
-    keywords = list(map(lambda kw : '%'+kw.strip()+'%', keywords))
-    keywords = {'kw{}'.format(i) : kw for i, kw in enumerate(keywords)}
+    valid = False
+    while not valid:
+        keywords = input(prompt).lower().split(',')
+        keywords = filter(lambda kw: len(kw.strip()) > 0, keywords)
+        keywords = list(map(lambda kw : '%'+kw.strip()+'%', keywords))
+        keywords = {'kw{}'.format(i) : kw for i, kw in enumerate(keywords)}
+        if len(keywords) > 0:
+            valid = True
+        else:
+            print(bcolor.errmsg('error: search keywords cannot be empty'))
 
     return keywords
 
@@ -403,8 +413,8 @@ def getMatchesQuery(i):
     matchingTitleBodyTable = '''
                             SELECT 
                                 pid,
-                                (length(lower(title))-length(replace(lower(title), :kw{0}, ''))) / length(:kw{0})
-                                  + (length(lower(body))-length(replace(lower(body), :kw{0}, ''))) / length(:kw{0}) 
+                                (length(lower(title))-length(replace(lower(title), substr(:kw{0}, 2, length(:kw{0})-2), ''))) / (length(:kw{0})-2)
+                                  + (length(lower(body))-length(replace(lower(body), substr(:kw{0}, 2, length(:kw{0})-2), ''))) / (length(:kw{0})-2)
                                     as numTitleBodyMatches
                             FROM posts p
                             WHERE 
