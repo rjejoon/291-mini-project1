@@ -142,7 +142,7 @@ def editPost(conn, curr, pid):
     inputs:
         conn: sqlite3.Connection
         curr: sqlite3.Cursor
-        pid: posts.pid
+        pid: pid
     '''
     curr.execute("SELECT title, body FROM posts WHERE pid=?;", (pid, )) 
     currT, currB = curr.fetchone()

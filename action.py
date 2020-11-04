@@ -5,6 +5,7 @@ import os
 from datetime import date
 from collections import OrderedDict
 import page
+import action
 import bcolor
 
 
@@ -32,15 +33,18 @@ def postQ(conn, curr, poster):
         print(bcolor.green('Posting Completed!'))
 
 
-def searchPosts(curr):
+def searchPosts(curr, isPriv):
     '''
-    Prompt the user for search keywords and return the posts containing those keywords.
+    Prompts the user for one or more search keywords and returns the posts with the keywords.
+    The search looks for the matching keywords from the three fields: title, body, and tags.
     Keywords are case-insensitive.
 
     Input:
         curr -- sqlite3.Cursor
+        isPriv -- bool
     Return:
-        resultTable -- list 
+        targetPost -- Sqlite3.Row,
+        act -- str
     '''
     keywords = getKeywords()
     searchQuery = genSearchQuery(keywords)
@@ -48,7 +52,12 @@ def searchPosts(curr):
     curr.execute(searchQuery, keywords)
     resultTable = curr.fetchall()
 
-    return resultTable
+    if len(resultTable) > 0:
+        no, act = action.displaySearchResult(resultTable, isPriv)
+        targetPost = resultTable[no]
+        return targetPost, act
+    else:
+        print(bcolor.errmsg('No posts found.'))
 
 
 def postAns(conn, curr, poster, qid):
