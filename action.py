@@ -4,8 +4,8 @@ import os
 
 from datetime import date
 from collections import OrderedDict
-from util import page
-from util import bcolor
+import page
+import bcolor
 
 
 def postQ(conn, curr, poster):
@@ -183,8 +183,8 @@ def getKeywords():
     print(bcolor.pink('< Search Posts >'))
 
     prompt = "Enter keywords to search, each separated by a comma: "
-    keywords = input(prompt).lower().replace("'", "''").split(',')
-    keywords = list(map(lambda kw : kw.strip(), keywords))
+    keywords = input(prompt).lower().split(',')
+    keywords = list(map(lambda kw : '%'+kw.strip()+'%', keywords))
     keywords = {'kw{}'.format(i) : kw for i, kw in enumerate(keywords)}
 
     return keywords
@@ -398,8 +398,8 @@ def getMatchesQuery(i):
                                     as numTitleBodyMatches
                             FROM posts p
                             WHERE 
-                                p.title LIKE '%'||:kw{0}||'%'
-                                OR p.body LIKE '%'||:kw{0}||'%'
+                                p.title LIKE :kw{0}
+                                OR p.body LIKE :kw{0}
                             '''.format(i) 
 
     matchingTagTable = '''
@@ -409,7 +409,7 @@ def getMatchesQuery(i):
                         FROM 
                             tags t
                         WHERE
-                            tag like '%'||:kw{0}||'%'
+                            tag like :kw{0}
                         GROUP BY 
                             pid
                     '''.format(i)

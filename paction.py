@@ -1,8 +1,8 @@
 import sqlite3
 
 from datetime import date
-from util import page
-from util import bcolor
+import page
+import bcolor
 
 def markAnswer(conn, curr, aid):
     '''

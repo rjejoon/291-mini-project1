@@ -3,9 +3,9 @@ import os
 import getpass
 
 from datetime import date
-from util import bcolor
-from user import action
-from user.privileged import paction  
+import bcolor
+import action
+import paction  
 
 
 def mainMenu(conn, curr, uid):

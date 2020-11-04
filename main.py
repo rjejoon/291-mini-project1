@@ -3,8 +3,8 @@ import os
 import sys
 import traceback
 
-from util import bcolor
-from util import page
+import bcolor
+import page
 
 
 def main(argv):
