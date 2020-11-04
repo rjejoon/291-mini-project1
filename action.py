@@ -52,12 +52,13 @@ def searchPosts(curr, isPriv):
     curr.execute(searchQuery, keywords)
     resultTable = curr.fetchall()
 
+    targetPost = []
+    act = ''
     if len(resultTable) > 0:
         no, act = action.displaySearchResult(resultTable, isPriv)
         targetPost = resultTable[no]
-        return targetPost, act
-    else:
-        print(bcolor.errmsg('No posts found.'))
+
+    return targetPost, act
 
 
 def postAns(conn, curr, poster, qid):

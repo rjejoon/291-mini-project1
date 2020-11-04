@@ -31,7 +31,10 @@ def mainMenu(conn, curr, uid):
 
         elif option == 'sp':
             targetPost, act = action.searchPosts(curr, isPriv)
-            executeAction(conn, curr, act, uid, targetPost['pid'], targetPost['poster'])
+            if len(targetPost) > 0 and act != '':
+                executeAction(conn, curr, act, uid, targetPost['pid'], targetPost['poster'])
+            else:
+                print(bcolor.errmsg('No posts found.'))
             
         elif option == 'so':
             if checkSignout():
