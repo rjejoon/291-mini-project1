@@ -111,7 +111,7 @@ def signIn(curr):
             
         else:
             print(bcolor.errmsg('error: invalid user ID or password.'))
-            prompt = "Do you stil want to sign in? [y/n] "
+            prompt = bcolor.warning('Do you still want to sign in? [y/n] ')
             uin = getValidInput(prompt, ['y','n'])
             if uin == 'n':
                 return None
@@ -141,7 +141,7 @@ def signUp(conn, curr):
         if checkValid(uid, name, city):
             valid = True
         else:
-            cont = getValidInput('Do you still want to sign up? [y/n] ', ['y', 'n'])
+            cont = getValidInput(bcolor.warning('Do you still want to sign up? [y/n] '), ['y', 'n'])
             if cont == 'n':
                 return 
 
@@ -170,7 +170,7 @@ def checkSignout():
     '''
     Check if the user wants to sign out.
     '''
-    so = getValidInput('Do you want to sign out? [y/n] ', ['y', 'n'])
+    so = getValidInput(bcolor.warning('Do you want to sign out? [y/n] '), ['y', 'n'])
     if so == 'y':
         return True
     return False
@@ -266,7 +266,7 @@ def continueAction(prompt):
     '''
     Confirm the users if they still want to continue the current action.
     '''
-    uin = getValidInput(prompt, ['y', 'n'])
+    uin = getValidInput(bcolor.warning(prompt), ['y', 'n'])
     return True if uin == 'y' else False
 
 

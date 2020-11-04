@@ -541,7 +541,7 @@ def genPid(curr):
     if not pid_n:     # no posts in db
         return 'p001'
 
-    pid = 'p{:03}'.format(pid_n)    # format: 'pxxx'
+    pid = 'p{:03}'.format(pid_n)    # format: 'px'
     while not isPidUnique(curr, pid):
         pid_n += 1
         pid = 'p{:03}'.format(pid_n)    
