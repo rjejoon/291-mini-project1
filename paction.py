@@ -374,8 +374,11 @@ def getValidTag():
     '''
     validTag = False
     while not validTag:
-        newTags = input('\nEnter tags to add, each separated by a comma: ')
-        newTags = [x.strip() for x in newTags.split(',') if x.strip()]
+        tags = input('\nEnter tags to add, each separated by a comma: ')
+        newTags = []
+        for x in tags.split(','):
+            if x not in newTags:
+                newTags.append(x.strip())
         if len(newTags) > 0:
             validTag = True
         else:
