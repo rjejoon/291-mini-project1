@@ -1,4 +1,4 @@
-# 291-mini-project1
+# Q&A-Forum
 > Python SQLite project for CMPUT 291
 
 This application is a simple Q&A forum where users can post questions and share their answers with others. 
